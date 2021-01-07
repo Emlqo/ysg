@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>index</title>
+</head>
+<body>
+<!--파이썬 사용하기 위해선 중괄호{}안에 적어야함 변수 출력 할꺼면 {}하나더 적어야함-->
+<!--<a href="https://docs.djangoproject.com/en/3.1/ref/templates/builtins/#ref-templates-builtins-tags"> 태그 관련 이쪽 참조</a>-->
+
+<div>
+<form action="{% url 'sms:submit' %}" method="post">
+    {% csrf_token %}
+    <p>
+    <label for="phone_number">phone_number: </label>
+<!--  onkeypress="this.style.height = ((this.value.length + 1) * 8) + 'px';"-->
+    <input id="phone_number" type="text" name="phone_number" value="{{ phone_number }}"
+            style="width:300px;height:200px;font-size:12px;"
+    >
+  </p>
+    <p>
+        <label for="name">name: </label>
+<!--  onkeypress="this.style.height = ((this.value.length + 1) * 8) + 'px';"-->
+    <input id="name" type="text" name="name" value="{{ name }}"
+            style="width:300px;height:200px;font-size:12px;"
+    >
+</p>
+    <input type="submit" value="OK">
+</form>
+
+</div>
+
+
+<!--{% if latest_question_list %}-->
+<!--    <ul>-->
+<!--    {% for question in latest_question_list %}-->
+<!--      &lt;!&ndash; 하드코딩 버전 <li><a href="/sms/{{ question.id }}/">{{ question.question_text }}</a></li>&ndash;&gt;-->
+<!--        &lt;!&ndash; 깔끔 버전 &ndash;&gt;  <li><a href="{% url 'polls:detail' question.id %}">{{question.question_text}}</a></li>-->
+<!--    {% endfor %}-->
+<!--    </ul>-->
+<!--{% else %}-->
+<!--    <p>No polls are available.</p>-->
+<!--{% endif %}-->
+</body>
+</html>
