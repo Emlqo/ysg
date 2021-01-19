@@ -1,12 +1,16 @@
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views import generic
-
-from .models import Message, User
+import sqlite3
+from .models import Message, Message_User,Notice
+import pandas as pd
 from django.template import loader
 from django.shortcuts import render
 from .func.sms_send import sms_send
 # Create your views here.
+from urllib import parse
+
+
 
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 
@@ -31,8 +35,11 @@ def index(request):
 def submit(request):
 
     if request.method =='POST':
-        data = request.POST.getlist('phone_number')
-        send = sms_send('test', str( data))
+        phone_number = request.POST.getlist('phone_number')
+        name = request.POST.getlist('name')
+        notice_text = request.POST.getstr('notice_text')
+        notice_title = request.POST.getstr('notice_title')
+        send = sms_send(str(name), str( phone_number))
         print(send.get_sms_receiver())
         send.send()
 
@@ -41,6 +48,60 @@ def submit(request):
              reverse('sms:index', ))
 
 
+def notice_view(request,notice_key ,notice_url):
+    conn = sqlite3.connect('./db.sqlite3')
+    cur = conn.cursor()
+    # print(parse.quote(notice_url))
+    # notice_url =  str(parse.quote(notice_url).lower())
+    sql = "select  user_phoneNumber_id from main.sms_message WHERE notice_url  = ?"
+    print(notice_url)
+    cur.execute("select  user_phoneNumber_id from main.sms_message WHERE notice_url  = ?",[notice_url])
+    rows = cur.fetchall()
+    print(rows)
+
+    print(rows[0][0])
+
+    cur.execute("UPDATE main.sms_message SET isConfirmbyReceiver = True WHERE user_phoneNumber_id = ? ",[rows[0][0]])
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    message_User =  get_object_or_404(Message_User,pk=notice_url)
+    message = get_object_or_404(Message,pk=notice_url)
+    notice = get_object_or_404(Notice, pk=notice_key)
+    return render(request,'sms/nt_view.html',{'message' : message, 'notice' : notice , 'message_User' : message_User} )
+
+def admin(request, notice_key):
+        conn = sqlite3.connect('./db.sqlite3')
+        cur = conn.cursor()
+        # print(parse.quote(notice_url))
+        # notice_url =  str(parse.quote(notice_url).lower())
+        name_list = []
+        sql = "select * from  sms_message where notice_key_id  = ?"
+
+        cur.execute(sql, [notice_key])
+        rows = cur.fetchall()
+        for name in rows:
+            print(name[4])
+            sql = "select user_name from  sms_Message_User where user_phoneNumber = ?"
+
+            cur.execute(sql, [name[4]])
+            name_list.append(cur.fetchall()[0])
+
+
+        print(name_list)
+        conn.commit()
+        cur.close()
+        conn.close()
+        rows =pd.DataFrame(rows)
+        rows['name']=name_list
+
+        rows.rename(columns={0:"notice_title", 1:"phone_number",2:"isConfirmbyReceiver",3:"notice_key"}, inplace=True)
+        print(rows.columns)
+        del rows[4]
+        result = rows.to_html()
+
+        return render(request, 'sms/admin_nt_view.html', {'result': result})
 
     # try:
     #     selected_choice = question.choice_set.get(pk=request.POST['choice'])  # https://milhouse93.ti
@@ -93,7 +154,7 @@ def submit(request):
 # def results(request, question_id):
 #     question = get_object_or_404(Question,pk=question_id)
 #
-#     return render(request,'sms/results.html',{'question' : question})
+#     return render(request,'sms/nt_view.html',{'question' : question})
 #
 # def vote(request, question_id):
 #     question = get_object_or_404(Question, pk=question_id)  ## question 객체를 불러온다 그중 프라이머리키(기본키)가 question_id 인것으로
@@ -161,7 +222,7 @@ def submit(request):
 #
 # class ResultsView(generic.DetailView):
 #     model = Question
-#     template_name = 'sms/results.html'
+#     template_name = 'sms/nt_view.html'
 #
 #
 # def vote(request, question_id):

@@ -4,8 +4,13 @@ from django.contrib import admin
 
 # Register your models here.
 from django.contrib import admin
+from import_export.admin import ExportActionModelAdmin, ImportExportMixin, ImportMixin
 
-from .models import Message,User
 
-admin.site.register(Message)
-admin.site.register(User)
+from .models import Message,Message_User,Notice
+
+class MessageAdmin(ImportExportMixin, admin.ModelAdmin ):
+    pass
+admin.site.register(Message,MessageAdmin)
+admin.site.register(Message_User,MessageAdmin)
+admin.site.register(Notice,MessageAdmin)

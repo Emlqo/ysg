@@ -1,0 +1,98 @@
+var showRight = false;
+$(document).ready(function(){
+    $('#chk_all').click(function(){
+        if($(this).is(':checked')){
+            $('input[name^=cb]').prop('checked',true);
+        }else{
+            $('input[name^=cb]').prop('checked',false);
+        }
+    });
+
+/*
+	$('#RS').on('mouseover', function(){
+		if(showRight == false){
+			$(this).animate({'right':'0'});
+			showRight = true;
+		}
+	});
+	
+	$('#RS').on('mouseleave', function(){
+		if(showRight){
+			$(this).animate({'right':'-180'});
+			showRight = false;
+		}
+		
+	});
+	
+	$('#RS').delay(1500).animate({'right':'-180'}, 'slow');
+*/
+
+    function layer_open(el){
+        var temp = $('#' + el);
+        var bg = temp.prev().hasClass('bg');//dimmed 레이어를 감지하기 위한 boolean 변수
+
+        temp.find('a.pClose').click(function(e){
+            if(bg){
+                $('.layer').fadeOut(); //'bg' 클래스가 존재하면 레이어를 사라지게 한다.
+            }else{
+                temp.fadeOut();
+            }
+            $('#ifmBody').attr('src','/union/blank.html');
+            e.preventDefault();
+        });
+
+        $('.layer .bg').click(function(e){	//배경을 클릭하면 레이어를 사라지게 하는 이벤트 핸들러
+            $('.layer').fadeOut();
+            $(".ppBoxSmall").remove();
+            $('#ifmBody').attr('src','/union/blank.html');
+            e.preventDefault();
+        });
+
+        $('.bg').fadeTo("slow",0.6);
+        // 박스 가로중앙위치
+        if (temp.outerWidth() < $(document).width() ) temp.css('margin-left', '-'+temp.outerWidth()/2+'px'); else temp.css('left', '0px');
+
+        // 박스 세로 중앙위치
+        if ($(document).height() < 760 ) { // 작은화면 처리..
+            $('.bg').css({'height':'760px'});
+            temp.css("top", Math.round(($(document).height() - temp.height())/2)+'px');
+        } else {
+            $('.bg').css({'height':($(document).height()+9)+'px'});
+            temp.css("top", ( $(document).height() / 2 - temp.height() / 2)+'px');
+            // 박스크기 계산 스크롤 위치지정
+            $(document).scrollTop( Math.round($(document).height() / 2 - temp.height() / 2) - (760 - temp.height()) /2 );
+        }
+        $('.bg').css({'top':'-9px'});
+
+        if(bg){
+            $('.layer').show();	//'bg' 클래스가 존재하면 레이어가 나타나고 배경은 dimmed 된다.
+        }else{
+            temp.show();;
+        }
+    }
+
+});
+
+//메세지박스
+var msgTimer;
+function showMsg(objNo,msg,hd) {
+    $(".error__msg__box > span").text(msg);
+    $(".error__msg__box").show();
+    clearTimeout(msgTimer);
+    if(!hd){
+        msgTimer = setTimeout(function() { $(".error__msg__box").slideUp("slow");  }, 4000);
+    }
+    return true;
+}
+
+//  컴마 붙이기
+function comma(str) {
+    str = String(str);
+    return str.replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+}
+//  컴마 붙이기
+function mcomma(str) {
+    str = String(str);
+    return str.replace(/,/gi, '');
+}
+
