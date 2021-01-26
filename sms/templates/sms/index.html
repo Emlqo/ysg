@@ -11,37 +11,57 @@
 <div>
 <form action="{% url 'sms:submit' %}" method="post">
     {% csrf_token %}
-    <p>
-    <label for="phone_number">phone_number: </label>
-<!--  onkeypress="this.style.height = ((this.value.length + 1) * 8) + 'px';"-->
-    <input id="phone_number" type="text" name="phone_number" value="{{ phone_number }}"
-            style="width:300px;height:200px;font-size:12px;"
-    >
-  </p>
-    <p>
-        <label for="name">name: </label>
-<!--  onkeypress="this.style.height = ((this.value.length + 1) * 8) + 'px';"-->
-    <input id="name" type="text" name="name" value="{{ name }}"
-            style="width:300px;height:200px;font-size:12px;"
-    >
-</p>
+<!--    <p>-->
+<!--    <label for="phone_number">phone_number: </label>-->
+<!--&lt;!&ndash;  onkeypress="this.style.height = ((this.value.length + 1) * 8) + 'px';"&ndash;&gt;-->
+<!--    <input id="phone_number" type="text" name="phone_number" value="{{ phone_number }}"-->
+<!--            style="width:300px;height:200px;font-size:12px;"-->
+<!--    >-->
+<!--  </p>-->
+<!--    <p>-->
+<!--        <label for="name">name: </label>-->
+<!--&lt;!&ndash;  onkeypress="this.style.height = ((this.value.length + 1) * 8) + 'px';"&ndash;&gt;-->
+<!--    <input id="name" type="text" name="name" value="{{ name }}"-->
+<!--            style="width:300px;height:200px;font-size:12px;"-->
+<!--    >-->
+<!--</p>-->
         <p>
-        <label for="notice_text">name: </label>
+        <label for="notice_text">notice_text: </label>
 <!--  onkeypress="this.style.height = ((this.value.length + 1) * 8) + 'px';"-->
     <input id="notice_text" type="text" name="notice_text" value="{{ notice_text }}"
             style="width:300px;height:200px;font-size:12px;"
     >
 </p>
     <p>
-        <label for="notice_title">name: </label>
+        <label for="notice_title">notice_title: </label>
 <!--  onkeypress="this.style.height = ((this.value.length + 1) * 8) + 'px';"-->
     <input id="notice_title" type="text" name="notice_title" value="{{ notice_title }}"
             style="width:300px;height:200px;font-size:12px;"
     >
 </p>
 
+    <select name="group" id ="group">
+    <option value="전체">전체</option>
+{% for i in kind %}
+
+    <option value={{i}}>{{i}}</option>
+{% endfor %}
+</select>
+
+
+
     <input type="submit" value="OK">
 </form>
+
+
+        <form action="{% url 'sms:message_User_insert' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input id="file" type="file" name="file" value="file"  />
+        <input id="submit" type="submit" value="Upload" />
+        </form>
+
+
+
 
 </div>
 

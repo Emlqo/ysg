@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 
 class Notice(models.Model):
-    notice_date = models.DateTimeField('date published')
+    notice_date = models.DateTimeField('date')
     notice_title =  models.CharField(max_length=200)
     notice_key= models.IntegerField(blank=False, null=False ,primary_key=True , unique=True)
 
@@ -11,7 +11,8 @@ class Notice(models.Model):
 class Message_User(models.Model):
 
     user_phoneNumber = models.CharField(max_length=200,primary_key=True , unique=True)
-    user_name =  models.CharField(max_length=30)
+    user_name =  models.CharField(max_length=200)
+    user_group = models.CharField(max_length=50, blank=True, null=True)
 
 
 

@@ -1,18 +1,22 @@
+from django import forms
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views import generic
 import sqlite3
+
+
+import openpyxl, pyexcel
 from .models import Message, Message_User,Notice
 import pandas as pd
 from django.template import loader
 from django.shortcuts import render
-from .func.sms_send import sms_send
+from .func.katalk_send import katalk_send
 # Create your views here.
 from urllib import parse
+from openpyxl import load_workbook
+from .forms import UploadFileForm
 
-
-
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseBadRequest
 
 
 #------------------------함수 기반 view---------------------
@@ -28,20 +32,78 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect
 
 # render 적용
 def index(request):
-    #latest_question_list = Message.objects.order_by('-pub_date')[:5]
-    #context = {'latest_question_list': latest_question_list}
-    return render(request, 'sms/index.html')
+    conn = sqlite3.connect('./db.sqlite3')
+    cur = conn.cursor()
+    sql = "select distinct user_group from  main.sms_message_user"
+
+    cur.execute(sql)
+    rows = cur.fetchall()
+
+    group_list=[]
+    for i in range(len(rows)):
+        group_list.append(rows[i][0])
+
+
+    return render(request, 'sms/index.html',{'kind': group_list})
+
+
+
+def message_User_insert(request):
+
+    if request.method == "POST":
+
+        form = UploadFileForm(request.POST, request.FILES)
+
+
+        if form.is_valid():
+
+            request.FILES['file'].save_to_database(
+                model=Message_User,
+                mapdict=['user_phoneNumber', 'user_name', 'user_group'])
+            return HttpResponse("OK")
+        else:
+
+            return HttpResponseBadRequest(form.is_valid())
+    else:
+        return render(request, 'sms/index.html')
+
+
+
+
+
 
 def submit(request):
 
     if request.method =='POST':
-        phone_number = request.POST.getlist('phone_number')
-        name = request.POST.getlist('name')
-        notice_text = request.POST.getstr('notice_text')
-        notice_title = request.POST.getstr('notice_title')
-        send = sms_send(str(name), str( phone_number))
-        print(send.get_sms_receiver())
+        # phone_number = request.POST.getlist('phone_number')
+        # name = request.POST.getlist('name')
+
+        conn = sqlite3.connect('./db.sqlite3')
+        cur = conn.cursor()
+        group = request.POST.get('group')
+        if group=='전체':
+            sql = "select * from  main.sms_message_user"
+            cur.execute(sql)
+        else:
+            sql = "select * from  main.sms_message_user where user_group = ? "
+            cur.execute(sql, group)
+
+
+        rows = cur.fetchall()
+
+        rows = pd.DataFrame(rows)
+
+        phone_number = rows[0]
+        name = rows[1]
+
+
+
+        notice_text = request.POST.get('notice_text')
+        notice_title = request.POST.get('notice_title')
+        # limit_time = request.POST.get('limit_time')
+        send = katalk_send(name, phone_number , str( notice_text) , str( notice_title) , str( "7시")  )
         send.send()
+
 
 
     return HttpResponseRedirect(
@@ -55,7 +117,7 @@ def notice_view(request,notice_key ,notice_url):
     # notice_url =  str(parse.quote(notice_url).lower())
     sql = "select  user_phoneNumber_id from main.sms_message WHERE notice_url  = ?"
     print(notice_url)
-    cur.execute("select  user_phoneNumber_id from main.sms_message WHERE notice_url  = ?",[notice_url])
+    cur.execute(sql,[notice_url])
     rows = cur.fetchall()
     print(rows)
 
@@ -89,7 +151,7 @@ def admin(request, notice_key):
             name_list.append(cur.fetchall()[0])
 
 
-        print(name_list)
+
         conn.commit()
         cur.close()
         conn.close()
@@ -97,7 +159,7 @@ def admin(request, notice_key):
         rows['name']=name_list
 
         rows.rename(columns={0:"notice_title", 1:"phone_number",2:"isConfirmbyReceiver",3:"notice_key"}, inplace=True)
-        print(rows.columns)
+
         del rows[4]
         result = rows.to_html()
 
