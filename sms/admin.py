@@ -8,7 +8,7 @@ from import_export import resources
 from import_export.admin import  ImportExportActionModelAdmin
 
 
-from .models import Message,Message_User,Notice
+from .models import Message,Message_User,Notice ,Sender_User
 
 class Message_UserResource(resources.ModelResource):
     class Meta:
@@ -25,3 +25,4 @@ class MessageAdmin(ImportExportActionModelAdmin):
 admin.site.register(Message,MessageAdmin)
 admin.site.register(Message_User,MessageAdmin)
 admin.site.register(Notice,MessageAdmin)
+admin.site.register(Sender_User,MessageAdmin)

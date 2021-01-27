@@ -11,7 +11,7 @@ import json
 # 다만, 변수처리하지 않고 고정값으로 입력하여 템플릿 신청하셨다면 신청하신 url그대로 사용해주셔야 합니다ㅣ.
 #  send = katalk_send(str(name), str( phone_number) , str( notice_text) , str( notice_title) , str( limit_time)  )
 class katalk_send:
-    def __init__(self, name, sms_receiver , notice_text  ,notice_title ,limit_time):
+    def __init__(self, name, sms_receiver , notice_text  ,notice_title ,limit_time, notice_id , nowDatetime):
         print('생성자 호출!')
 
         self.name = name
@@ -20,6 +20,8 @@ class katalk_send:
         self.notice_text = notice_text
         self.notice_title = notice_title
         self.limit_time = limit_time
+        self.notice_id = notice_id
+        self.nowDatetime = nowDatetime
         print(sms_receiver[0] ,self.sms_receiver_len)
 
 
@@ -31,6 +33,10 @@ class katalk_send:
         return self.sms_receiver
 
     def send(self):
+        conn = sqlite3.connect('./db.sqlite3')
+        cur = conn.cursor()
+
+
         basic_send_url = 'https://kakaoapi.aligo.in/akv10/alimtalk/send/'  # 요청을 던지는 URL, 알림톡 전송
         button_info = []
         for i in range(self.sms_receiver_len):
@@ -38,8 +44,8 @@ class katalk_send:
             button_info.append( {'button': [{'name': '공지 확인',  # 버튼명
                                        'linkType': 'WL',  # DS, WL, AL, BK, MD
                                        'linkTypeName': '웹링크',  # 배송조회, 웹링크, 앱링크, 봇키워드, 메시지전달 중에서 1개
-                                       'linkM': 'http://3.140.216.53:8000/'+ str(self.sms_receiver[i]),  # WL일 때 필수
-                                       'linkP': 'http://3.140.216.53:8000/'+ str(self.sms_receiver[i]),  # WL일 때 필수
+                                       'linkM': 'http://3.140.216.53:8000/' +self.nowDatetime+ '/'+str(self.sms_receiver[i]),  # WL일 때 필수
+                                       'linkP': 'http://3.140.216.53:8000/'+self.nowDatetime+'/' +str(self.sms_receiver[i]),  # WL일 때 필수
                                        # 'linkI': 'IOS app link', # AL일 때 필수
                                        # 'linkA': 'Android app link' # AL일 때 필수
                                        }]})
@@ -89,6 +95,20 @@ class katalk_send:
             sms_data['message_'+str(i+1)] ='독수리공지에서 공지가' \
             ' 도착 했습니다!!'+self.name[i]+'님 '+self.notice_title+'을 '+self.limit_time+' 까지 열람 가능합니다.'
             sms_data['button_'+str(i+1)] =json.dumps(button_info[i])
+            sql = "insert into sms_Message ( individual_notice_text,notice_url  , notice_date_id, isConfirmbyReceiver ,user_phoneNumber_id ,notice_id_id)values (?,?,?,?,?,?)"
+            # individual_notice_text = models.CharField(max_length=1200)
+            # notice_url = models.CharField(max_length=600, primary_key=True, unique=True)
+            # notice_date = models.ForeignKey(Notice, on_delete=models.CASCADE)
+            # isConfirmbyReceiver = models.BooleanField(default=False)
+            # user_phoneNumber = models.ForeignKey(Message_User, on_delete=models.CASCADE)
+            # notice_id = models.ForeignKey(Sender_User, on_delete=models.CASCADE)
+            print([sms_data['message_'+str(i+1)], str(self.nowDatetime+ str(self.sms_receiver[i])),  False, str(self.notice_id), str(self.sms_receiver[i])])
+
+            cur.execute(sql, [self.notice_text, str(self.nowDatetime+ str(self.sms_receiver[i])),
+                              str(self.nowDatetime), False, str(self.sms_receiver[i]), str(self.notice_id)])
+
+            conn.commit()
+
 
         print(sms_data)
 

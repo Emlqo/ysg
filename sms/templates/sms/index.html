@@ -25,6 +25,15 @@
 <!--            style="width:300px;height:200px;font-size:12px;"-->
 <!--    >-->
 <!--</p>-->
+
+        <p>
+        <label for="notice_title">notice_title: </label>
+    <input id="notice_title" type="text" name="notice_title" value="{{ notice_title }}"
+            style="width:300px;height:200px;font-size:12px;"
+    >
+</p>
+
+
         <p>
         <label for="notice_text">notice_text: </label>
 <!--  onkeypress="this.style.height = ((this.value.length + 1) * 8) + 'px';"-->
@@ -32,13 +41,23 @@
             style="width:300px;height:200px;font-size:12px;"
     >
 </p>
-    <p>
-        <label for="notice_title">notice_title: </label>
-<!--  onkeypress="this.style.height = ((this.value.length + 1) * 8) + 'px';"-->
-    <input id="notice_title" type="text" name="notice_title" value="{{ notice_title }}"
+
+        <p>
+        <label for="notice_id">notice_id: </label>
+    <input id="notice_id" type="text" name="notice_id" value="{{ notice_id }}"
             style="width:300px;height:200px;font-size:12px;"
     >
 </p>
+
+           <p>
+        <label for="notice_ps">notice_ps: </label>
+    <input id="notice_ps" type="text" name="notice_ps" value="{{ notice_ps }}"
+            style="width:300px;height:200px;font-size:12px;"
+    >
+</p>
+
+
+
 
     <select name="group" id ="group">
     <option value="전체">전체</option>

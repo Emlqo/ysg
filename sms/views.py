@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views import generic
 import sqlite3
-
+import datetime
 
 import openpyxl, pyexcel
 from .models import Message, Message_User,Notice
@@ -19,7 +19,7 @@ from .forms import UploadFileForm
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseBadRequest
 
 
-#------------------------함수 기반 view---------------------
+#-------------------함수 기반 view---------------------
 
 # render 안쓴 것
 # def index(request):
@@ -42,6 +42,7 @@ def index(request):
     group_list=[]
     for i in range(len(rows)):
         group_list.append(rows[i][0])
+
 
 
     return render(request, 'sms/index.html',{'kind': group_list})
@@ -80,14 +81,35 @@ def submit(request):
 
         conn = sqlite3.connect('./db.sqlite3')
         cur = conn.cursor()
+
+        # 공지 DB Insert
+
+        notice_text = request.POST.get('notice_text')
+        notice_title = request.POST.get('notice_title')
+        notice_id = request.POST.get('notice_id')
+        notice_ps = request.POST.get('notice_ps')
+        now = datetime.datetime.now()
+        nowDatetime = now.strftime('%Y-%m-%d %H:%M:%S')
+        print(nowDatetime , notice_title, notice_text,notice_id ,notice_ps)
+
+
+        sql = "insert into sms_notice (notice_date,notice_title,notice_text,notice_id_id,notice_ps) values (?,?,?,?,?)"
+
+        cur.execute(sql, [nowDatetime, str(notice_title),  str(notice_text),str(notice_id),str(notice_ps)])
+
+        conn.commit()
+
+
+
+
+        # 알림톡 수신자 data 가져오기
         group = request.POST.get('group')
-        if group=='전체':
+        if group == '전체':
             sql = "select * from  main.sms_message_user"
             cur.execute(sql)
         else:
             sql = "select * from  main.sms_message_user where user_group = ? "
             cur.execute(sql, group)
-
 
         rows = cur.fetchall()
 
@@ -98,10 +120,12 @@ def submit(request):
 
 
 
-        notice_text = request.POST.get('notice_text')
-        notice_title = request.POST.get('notice_title')
+        cur.close()
+        conn.close()
+
+
         # limit_time = request.POST.get('limit_time')
-        send = katalk_send(name, phone_number , str( notice_text) , str( notice_title) , str( "7시")  )
+        send = katalk_send(name, phone_number , str( notice_text) , str( notice_title) , str( "12시") , str(notice_id) ,str(nowDatetime) )
         send.send()
 
 
@@ -110,17 +134,17 @@ def submit(request):
              reverse('sms:index', ))
 
 
-def notice_view(request,notice_key ,notice_url):
+def notice_view(request,notice_id ,notice_url):
     conn = sqlite3.connect('./db.sqlite3')
     cur = conn.cursor()
     # print(parse.quote(notice_url))
     # notice_url =  str(parse.quote(notice_url).lower())
     sql = "select  user_phoneNumber_id from main.sms_message WHERE notice_url  = ?"
-    print(notice_url)
+    print(notice_url)  ## 2021-01-27 16:17:5001082745538      날짜 pk 랑 휴대전화 나눠야함
     cur.execute(sql,[notice_url])
     rows = cur.fetchall()
     print(rows)
-
+    print(notice_url[:19])
     print(rows[0][0])
 
     cur.execute("UPDATE main.sms_message SET isConfirmbyReceiver = True WHERE user_phoneNumber_id = ? ",[rows[0][0]])
@@ -128,26 +152,30 @@ def notice_view(request,notice_key ,notice_url):
     cur.close()
     conn.close()
 
-    message_User =  get_object_or_404(Message_User,pk=notice_url)
+    message_User =  get_object_or_404(Message_User,pk=rows[0][0])
+    print("1")
     message = get_object_or_404(Message,pk=notice_url)
-    notice = get_object_or_404(Notice, pk=notice_key)
+    print("2")
+    notice = get_object_or_404(Notice, pk=notice_url[:19])
+    print("3")
+
     return render(request,'sms/nt_view.html',{'message' : message, 'notice' : notice , 'message_User' : message_User} )
 
-def admin(request, notice_key):
+def admin(request, notice_id):
         conn = sqlite3.connect('./db.sqlite3')
         cur = conn.cursor()
         # print(parse.quote(notice_url))
         # notice_url =  str(parse.quote(notice_url).lower())
         name_list = []
-        sql = "select * from  sms_message where notice_key_id  = ?"
+        sql = "select * from  sms_message where notice_id_id  = ?"
 
-        cur.execute(sql, [notice_key])
+        cur.execute(sql, [notice_id])
         rows = cur.fetchall()
         for name in rows:
-            print(name[4])
+            print(name[5])
             sql = "select user_name from  sms_Message_User where user_phoneNumber = ?"
 
-            cur.execute(sql, [name[4]])
+            cur.execute(sql, [name[5]])
             name_list.append(cur.fetchall()[0])
 
 
@@ -158,9 +186,10 @@ def admin(request, notice_key):
         rows =pd.DataFrame(rows)
         rows['name']=name_list
 
-        rows.rename(columns={0:"notice_title", 1:"phone_number",2:"isConfirmbyReceiver",3:"notice_key"}, inplace=True)
+        rows.rename(columns={0:"notice_text", 1:"날짜 + 번호 URL",2:"isConfirmbyReceiver",3:"날짜"}, inplace=True)
 
         del rows[4]
+        del rows[5]
         result = rows.to_html()
 
         return render(request, 'sms/admin_nt_view.html', {'result': result})
