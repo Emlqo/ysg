@@ -90,7 +90,7 @@ def submit(request):
         notice_ps = request.POST.get('notice_ps')
         now = datetime.datetime.now()
         nowDatetime = now.strftime('%Y-%m-%d %H:%M:%S')
-        print(nowDatetime , notice_title, notice_text,notice_id ,notice_ps)
+
 
 
         sql = "insert into sms_notice (notice_date,notice_title,notice_text,notice_id_id,notice_ps) values (?,?,?,?,?)"
@@ -140,12 +140,12 @@ def notice_view(request,notice_id ,notice_url):
     # print(parse.quote(notice_url))
     # notice_url =  str(parse.quote(notice_url).lower())
     sql = "select  user_phoneNumber_id from main.sms_message WHERE notice_url  = ?"
-    print(notice_url)  ## 2021-01-27 16:17:5001082745538      날짜 pk 랑 휴대전화 나눠야함
+   # print(notice_url)  ## 2021-01-27 16:17:5001082745538      날짜 pk 랑 휴대전화 나눠야함
     cur.execute(sql,[notice_url])
     rows = cur.fetchall()
-    print(rows)
-    print(notice_url[:19])
-    print(rows[0][0])
+
+    #print(notice_url[:19])
+    #print(rows[0][0])
 
     cur.execute("UPDATE main.sms_message SET isConfirmbyReceiver = True WHERE user_phoneNumber_id = ? ",[rows[0][0]])
     conn.commit()
@@ -153,11 +153,11 @@ def notice_view(request,notice_id ,notice_url):
     conn.close()
 
     message_User =  get_object_or_404(Message_User,pk=rows[0][0])
-    print("1")
+
     message = get_object_or_404(Message,pk=notice_url)
-    print("2")
+
     notice = get_object_or_404(Notice, pk=notice_url[:19])
-    print("3")
+
 
     return render(request,'sms/nt_view.html',{'message' : message, 'notice' : notice , 'message_User' : message_User} )
 
@@ -172,7 +172,7 @@ def admin(request, notice_id):
         cur.execute(sql, [notice_id])
         rows = cur.fetchall()
         for name in rows:
-            print(name[5])
+
             sql = "select user_name from  sms_Message_User where user_phoneNumber = ?"
 
             cur.execute(sql, [name[5]])

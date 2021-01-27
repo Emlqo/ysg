@@ -12,7 +12,7 @@ import json
 #  send = katalk_send(str(name), str( phone_number) , str( notice_text) , str( notice_title) , str( limit_time)  )
 class katalk_send:
     def __init__(self, name, sms_receiver , notice_text  ,notice_title ,limit_time, notice_id , nowDatetime):
-        print('생성자 호출!')
+
 
         self.name = name
         self.sms_receiver = sms_receiver
@@ -22,7 +22,7 @@ class katalk_send:
         self.limit_time = limit_time
         self.notice_id = notice_id
         self.nowDatetime = nowDatetime
-        print(sms_receiver[0] ,self.sms_receiver_len)
+
 
 
 
@@ -102,7 +102,7 @@ class katalk_send:
             # isConfirmbyReceiver = models.BooleanField(default=False)
             # user_phoneNumber = models.ForeignKey(Message_User, on_delete=models.CASCADE)
             # notice_id = models.ForeignKey(Sender_User, on_delete=models.CASCADE)
-            print([sms_data['message_'+str(i+1)], str(self.nowDatetime+ str(self.sms_receiver[i])),  False, str(self.notice_id), str(self.sms_receiver[i])])
+            #print([sms_data['message_'+str(i+1)], str(self.nowDatetime+ str(self.sms_receiver[i])),  False, str(self.notice_id), str(self.sms_receiver[i])])
 
             cur.execute(sql, [self.notice_text, str(self.nowDatetime+ str(self.sms_receiver[i])),
                               str(self.nowDatetime), False, str(self.sms_receiver[i]), str(self.notice_id)])
@@ -110,8 +110,8 @@ class katalk_send:
             conn.commit()
 
 
-        print(sms_data)
+        #print(sms_data)
 
         alimtalk_send_response = requests.post(basic_send_url, data=sms_data)
 
-        print(alimtalk_send_response.json())
+        #print(alimtalk_send_response.json())
