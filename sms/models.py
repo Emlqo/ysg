@@ -1,12 +1,18 @@
+
 from django.db import models
 
 # Create your models here.
 
 class Sender_User(models.Model):
-    notice_id = models.CharField(blank=False, null=False, primary_key=True, unique=True, max_length=200)
-    notice_ps = models.CharField(max_length=200, blank=False, null=False)
+    id = models.CharField(blank=False, null=False, primary_key=True, unique=True, max_length=200)
+    ps = models.CharField(max_length=200, blank=False, null=False)
+    aptNm = models.CharField(max_length=200, blank=True, null=True)
+    complexNm= models.CharField(max_length=200, blank=True, null=True)
+    villageNm =models.CharField(max_length=200, blank=True, null=True)
+    aptAddress=models.CharField(max_length=200, blank=False, null=False)
+
     def __str__(self):
-        return str('%s' % (self.notice_id))
+        return str('%s' % (self.id))
 
 
 
@@ -15,7 +21,8 @@ class Notice(models.Model):
     notice_title =  models.CharField(max_length=200)
     notice_text = models.CharField(max_length=1200)
     notice_id= models.ForeignKey(Sender_User, on_delete=models.CASCADE)
-    notice_ps= models.CharField(max_length=200,blank=False, null=False)
+
+
 
     def __str__(self):
         return str('%s' % (self.notice_date))
@@ -28,7 +35,9 @@ class Message_User(models.Model):
 
     user_phoneNumber = models.CharField(max_length=200,primary_key=True , unique=True)
     user_name =  models.CharField(max_length=200)
-    user_group = models.CharField(max_length=50, blank=True, null=True)
+    user_dong = models.CharField(max_length=50, )
+    user_hosu = models.CharField(max_length=50,)
+    message_User_id=models.ForeignKey(Sender_User, on_delete=models.CASCADE)
 
     def __str__(self):
         return str('%s %s' % (self.user_phoneNumber, self.user_name))
@@ -42,11 +51,17 @@ class Message(models.Model):
     isConfirmbyReceiver =models.BooleanField(default=False)
     user_phoneNumber =models.ForeignKey(Message_User, on_delete=models.CASCADE)
     notice_id=models.ForeignKey(Sender_User, on_delete=models.CASCADE)
+    notice_Confirm_date = models.DateTimeField('date', blank=False, null=False)
+
+
     def __str__(self):
         return str('%s %s ' % (self.user_phoneNumber, self.notice_id))
 
 
 
+class Photo(models.Model):
+    notice_date = models.ForeignKey(Notice, on_delete=models.CASCADE, null=True)
+    image = models.ImageField(upload_to='images/', blank=True, null=True)
 
 
 

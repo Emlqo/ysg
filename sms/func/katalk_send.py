@@ -16,6 +16,7 @@ class katalk_send:
 
         self.name = name
         self.sms_receiver = sms_receiver
+
         self.sms_receiver_len = len(sms_receiver)
         self.notice_text = notice_text
         self.notice_title = notice_title
@@ -90,22 +91,18 @@ class katalk_send:
                     'testMode': 'N',  # 테스트 모드 적용여부(기본N), 실제 발송 X
                     }
 
+
         for i in range(self.sms_receiver_len):
             sms_data['receiver_'+str(i+1)]=self.sms_receiver[i]
-            sms_data['message_'+str(i+1)] ='독수리공지에서 공지가' \
+            sms_data['message_'+str(i+1)] ='오손도손공지에서 공지가' \
             ' 도착 했습니다!!'+self.name[i]+'님 '+self.notice_title+'을 '+self.limit_time+' 까지 열람 가능합니다.'
             sms_data['button_'+str(i+1)] =json.dumps(button_info[i])
-            sql = "insert into sms_Message ( individual_notice_text,notice_url  , notice_date_id, isConfirmbyReceiver ,user_phoneNumber_id ,notice_id_id)values (?,?,?,?,?,?)"
-            # individual_notice_text = models.CharField(max_length=1200)
-            # notice_url = models.CharField(max_length=600, primary_key=True, unique=True)
-            # notice_date = models.ForeignKey(Notice, on_delete=models.CASCADE)
-            # isConfirmbyReceiver = models.BooleanField(default=False)
-            # user_phoneNumber = models.ForeignKey(Message_User, on_delete=models.CASCADE)
-            # notice_id = models.ForeignKey(Sender_User, on_delete=models.CASCADE)
-            #print([sms_data['message_'+str(i+1)], str(self.nowDatetime+ str(self.sms_receiver[i])),  False, str(self.notice_id), str(self.sms_receiver[i])])
+            sql = "insert into sms_Message ( individual_notice_text,notice_url  , notice_date_id, isConfirmbyReceiver ,user_phoneNumber_id ,notice_id_id,notice_Confirm_date)values (?,?,?,?,?,?,?)"
+
+
 
             cur.execute(sql, [self.notice_text, str(self.nowDatetime+ str(self.sms_receiver[i])),
-                              str(self.nowDatetime), False, str(self.sms_receiver[i]), str(self.notice_id)])
+                              str(self.nowDatetime), False, str(self.sms_receiver[i]), str(self.notice_id),str(self.nowDatetime)])
 
             conn.commit()
 
@@ -114,4 +111,6 @@ class katalk_send:
 
         alimtalk_send_response = requests.post(basic_send_url, data=sms_data)
 
-        #print(alimtalk_send_response.json())
+        print(alimtalk_send_response.json())
+
+

@@ -1,0 +1,12 @@
+.wd100 {width: 100%;}
+.fixed-left {
+  position: fixed;
+  width: 290px;
+  top: 0;
+  left: 0;
+  bottom: 0
+}
+.content {
+    width: calc(100% - 290px);
+    margin: 0 auto
+}
