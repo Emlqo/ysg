@@ -142,8 +142,13 @@
 											<!-- Nav Item - Dashboard -->
 											<li class="nav-item">
 												<div class="input-group">
-													<select class="custom-select">
-														<option selected value="0">전체</option>
+												<select class="custom-select" name="group" id ="group">
+
+														<option value="전체">전체</option>
+													{% for i in group %}
+
+														<option value={{i}}>{{i}}</option>
+													{% endfor %}
 													</select>
 												</div>
 											</li>

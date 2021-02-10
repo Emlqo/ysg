@@ -77,13 +77,23 @@ def index(request):
         user_dong = rows['user_dong']
         user_hosu = rows['user_hosu']
 
+        sql = "select distinct user_dong from sms_Message_User where message_User_id_id =?"
+        cur.execute(sql, [user_id])
+
+        rows = cur.fetchall()
+        group_list = []
+        for i in range(len(rows)):
+            group_list.append(rows[i][0])
+
+
+
         user_data = zip(user_phoneNumber, user_name, user_dong,user_hosu)
 
 
+        print("?")
+        print(group_list)
 
-
-
-        return render(request, 'sms/index.html',{"history_data":history_data, "user_data":user_data,})
+        return render(request, 'sms/index.html',{"history_data":history_data, "user_data":user_data,"group":group_list})
     # conn = sqlite3.connect('./db.sqlite3')
     # cur = conn.cursor()
     # sql = "select distinct user_dong from  main.sms_message_user"
@@ -101,7 +111,113 @@ def index(request):
 
 def createNotice(request):
 
-    return render(request,'sms/createNotice.html')
+    if request.method == 'GET':
+        conn = sqlite3.connect('./db.sqlite3')
+        cur = conn.cursor()
+        user_id = request.session.get('user')
+        print(user_id)
+
+
+        sql = "select distinct user_dong from sms_Message_User where message_User_id_id =?"
+        cur.execute(sql, [user_id])
+
+        rows = cur.fetchall()
+        group_list = []
+        for i in range(len(rows)):
+            group_list.append(rows[i][0])
+
+
+        return render(request,'sms/createNotice.html')
+    if request.method == 'POST':
+        # phone_number = request.POST.getlist('phone_number')
+        # name = request.POST.getlist('name')
+
+        conn = sqlite3.connect('./db.sqlite3')
+        cur = conn.cursor()
+
+        # 공지 DB Insert
+
+        notice_text = request.POST.get('notice_text')
+        notice_title = request.POST.get('notice_title')
+        user_id = request.session.get('user')
+
+        now = datetime.datetime.now()
+        nowDatetime = now.strftime('%Y-%m-%d %H:%M:%S')
+
+        # sender_User = Sender_User()
+        # notice = Notice()
+        # notice.notice_id = sender_User
+        # notice.notice_date = nowDatetime
+        # notice.notice_title = request.POST.get('notice_title')
+        # notice.notice_text = request.POST.get('notice_text')
+        # notice.notice_id = request.POST.get('notice_id')
+        # notice.notice_ps = request.POST.get('notice_ps')
+        # notice.save()
+
+        sql = "insert into sms_notice (notice_date,notice_title,notice_text,notice_id_id) values (?,?,?,?)"
+
+        cur.execute(sql, [nowDatetime, str(notice_title), str(notice_text), str(user_id), ])
+
+        conn.commit()
+
+        phone_number = request.POST.get('phone_number')
+        if phone_number == '':
+
+            # 알림톡 수신자 data 가져오기
+            group = request.POST.get('group')
+            if group == '전체':
+                sql = "select * from  main.sms_message_user"
+                cur.execute(sql)
+            else:
+                sql = "select * from  main.sms_message_user where user_group = ? "
+
+                cur.execute(sql, [group])
+
+            rows = cur.fetchall()
+
+            rows = pd.DataFrame(rows)
+
+            phone_number_list = rows[0]
+            name = rows[1]
+
+        else:
+            phone_number_list = []
+            phone_number_list.append(phone_number)
+            sql = "select * from  main.sms_message_user where user_phoneNumber = ? "
+
+            cur.execute(sql, [phone_number])
+            rows = cur.fetchall()
+
+            rows = pd.DataFrame(rows)
+            name = rows[1]
+
+        for img in request.FILES.getlist('imgs'):
+            # Photo 객체를 하나 생성한다.
+            # photo = Photo()
+            # # 외래키로 현재 생성한 Notice의 기본키를 참조한다.
+            # photo.notice_date = notice
+            # # imgs로부터 가져온 이미지 파일 하나를 저장한다.
+            # photo.image = img
+            # # 데이터베이스에 저장
+            # photo.save()
+
+            sql = "insert into sms_photo (notice_date_id,image) values (?,?)"
+
+            cur.execute(sql, [nowDatetime, str(img)])
+
+            conn.commit()
+
+        cur.close()
+        conn.close()
+
+        # limit_time = request.POST.get('limit_time')
+        send = katalk_send(name, phone_number_list, str(notice_text), str(notice_title), str("12시"), str(notice_id),
+                           str(nowDatetime))
+        send.send()
+
+    return HttpResponseRedirect(
+        reverse('sms:index', ))
+
 
 def register(request):
 
