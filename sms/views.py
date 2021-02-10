@@ -115,7 +115,7 @@ def createNotice(request):
         conn = sqlite3.connect('./db.sqlite3')
         cur = conn.cursor()
         user_id = request.session.get('user')
-        print(user_id)
+
 
 
         sql = "select distinct user_dong from sms_Message_User where message_User_id_id =?"
