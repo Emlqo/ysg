@@ -14,6 +14,7 @@ urlpatterns = [
     path('register_submit/', views.register_submit, name='register_submit'),
     path('upload/', views.upload, name='upload'),
     path('createNotice/', views.createNotice, name='createNotice'),
+    path('insert_notice/', views.insert_notice, name='insert_notice'),
 
 
 ]
