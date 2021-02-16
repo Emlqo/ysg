@@ -107,11 +107,11 @@ def index(request):
 
 
         user_data = zip(user_phoneNumber, user_name, user_dong,user_hosu)
-        group_list2 = zip(group_list)
 
 
 
-        return render(request, 'sms/index.html',{"history_data":history_data, "user_data":user_data,"dong_list":dong_list,"group_list":sorted(group_list.items()),"group_list2":group_list2})
+
+        return render(request, 'sms/index.html',{"history_data":history_data, "user_data":user_data,"dong_list":dong_list,"group_list":sorted(group_list.items())})
     # conn = sqlite3.connect('./db.sqlite3')
     # cur = conn.cursor()
     # sql = "select distinct user_dong from  main.sms_message_user"
@@ -144,20 +144,32 @@ def createNotice(request):
         conn = sqlite3.connect('./db.sqlite3')
         cur = conn.cursor()
         user_id = request.session.get('user')
-        print(user_id)
-
 
 
         sql = "select distinct user_dong from sms_Message_User where message_User_id_id =?"
         cur.execute(sql, [user_id])
 
         rows = cur.fetchall()
-        group_list = []
+        dong_list = []
+        group_list = {}
+
         for i in range(len(rows)):
-            group_list.append(rows[i][0])
+            dong_list.append(rows[i][0])
+            group_list[rows[i][0]] = []
+
+        sql = "select  user_dong, user_hosu from sms_Message_User where message_User_id_id =?"
+        cur.execute(sql, [user_id])
+
+        rows = cur.fetchall()
+
+        for i in range(len(rows)):
+            group_list[rows[i][0]].append(rows[i][1])
 
 
-        return render(request,'sms/createNotice.html',{"group":group_list})
+
+
+
+        return render(request,'sms/createNotice.html',{"dong_list":dong_list,"group_list":sorted(group_list.items())})
     if request.method == 'POST':
         # phone_number = request.POST.getlist('phone_number')
         # name = request.POST.getlist('name')

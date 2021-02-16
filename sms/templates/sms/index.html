@@ -159,15 +159,27 @@
 
 											<!-- Divider -->
 											<hr class="sidebar-divider">
-											
+
 											<!-- Heading -->
-<!--											<div class="sidebar-heading">-->
+											<div class="sidebar-heading">
+												<input id="insert" type="submit" value="등록" />
 <!--												1단지-->
 <!--											</div>-->
 
 											<!-- 101동 -->
-														{% for key, values in group_list %}
+<!--											<div class="checkbox_group">-->
+<!--									{% for key, values in group_list %}-->
 
+
+<!--								  <input type="checkbox" id=check_all >-->
+<!--								  <label for=check_all>{{key}} 동</label>-->
+<!--												 	{% for v in values %}-->
+<!--								<input type="checkbox"   id={{v}}  name={{v}} value={{v}} class="normal" >-->
+<!--								  {% endfor %}-->
+<!--						{% endfor %}-->
+
+
+											{% for key, values in group_list %}
 
 											<li class="nav-item">
 												<a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapse_dong_101"
@@ -190,6 +202,10 @@
 											</li>
 											{% endfor %}
 
+
+								</div>
+
+
 											
 											<!-- Divider -->
 											<hr class="sidebar-divider">
@@ -198,6 +214,22 @@
 									</div>
 								</div>
 							</div>
+<!--							// 체크박스 전체 선택-->
+<!--$(".checkbox_group").on("click", "#check_all", function () {-->
+<!--    $(this).parents(".checkbox_group").find('input').prop("checked", $(this).is(":checked"));-->
+<!--});-->
+
+<!--// 체크박스 개별 선택-->
+<!--$(".checkbox_group").on("click", ".normal", function() {-->
+<!--    var is_checked = true;-->
+
+<!--    $(".checkbox_group .normal").each(function(){-->
+<!--        is_checked = is_checked && $(this).is(":checked");-->
+<!--    });-->
+
+<!--    $("#check_all").prop("checked", is_checked);-->
+<!--});-->
+
 							<!-- End of Tree -->
 							<!-- Generation List -->
 							<div class="col">
