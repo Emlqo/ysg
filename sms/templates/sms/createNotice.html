@@ -73,7 +73,7 @@
 										<h6 class="m-0 font-weight-bold text-primary">수신 그룹 선택</h6>
 									</div>
 									<div class="card-body bg-gradient-primary">
-
+											<form action="{% url 'sms:createNotice' %}" method="get" >
 										<ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar">
 
 											<!-- Divider -->
@@ -101,9 +101,13 @@
 											<!-- Heading -->
 
 											<div class="sidebar-heading">
-												<input  type="button" class="insert" value="등록" onclick="addInput();" />
+												<input  type="submit" name="insert" value="등록"  />
+												<input  type="submit" name="del" value="삭제"  />
 											</div>
 
+												{% for d in insert_list %}
+											<input type="text"  name="input" value={{d}}>
+												{% endfor %}
 
 											<!-- 101동 -->
 												{% for key, values in group_list %}
@@ -135,29 +139,18 @@
 											<hr class="sidebar-divider">
 
 										</ul>
+
+											</form>
 									</div>
 								</div>
 							</div>
 							<!-- End of Tree -->
-							<script type="text/javascript">
-								var arrInput = new Array(0);
- 								 var arrInputValue = new Array(0);
 
- 								 function addInput() {
- 								 var elem = document.getElementById("group");
-								  arrInput.push(elem.value );
-
-								  document.getElementById('parah').innerHTML+= "<input type='text' id='test "+ elem.value +"' value='+ elem.value +"'><br>";
-
-								}
-
-
-
-								</script>
 							<!-- Generation List -->
 
+
+							<form action="{% url 'sms:createNotice' %}" method="post">
 								{% csrf_token %}
-							<form action="{% url 'sms:createNotice' %}" method="post" onsubmit="return false;">
 							<div class="col">
 								<div class="card shadow mb-4">
 									<div class="card-header py-3">
@@ -169,6 +162,12 @@
 										</div>
 
 
+
+
+
+											<div class="mb-4">
+
+										</div>
 
 
 
@@ -212,6 +211,10 @@
 														<i class="fas fa-flag"></i>
 													</span>
 <!--													<span class="text">공지 발송</span>-->
+														{% for d in insert_list %}
+													{% csrf_token %}
+											<input type="text"  name="send" value={{d}}>
+												{% endfor %}
 													<input type="submit" value="공지 발송">
 												</a>
 											</div>

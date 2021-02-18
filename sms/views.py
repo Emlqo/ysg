@@ -37,7 +37,7 @@ def index(request):
         conn = sqlite3.connect('./db.sqlite3')
         cur = conn.cursor()
         user_id = request.session.get('user')
-        print(user_id)
+
 
 
         sql = "select * from sms_notice where notice_id_id =?"
@@ -45,73 +45,93 @@ def index(request):
         rows = cur.fetchall()
         rows = pd.DataFrame(rows)
 
+
         rows.rename(columns={0:"date", 1:"title",2:"text"},inplace=True)
 
+        rate = []
+        notice_pk=[]
+        date =[] # 2021. 2. 16. 오전 11:28:54        2021-02-09 01:47:37
 
-        date =[]
-        for i in rows['date']:
-            date.append(i[:16])
+        if 0<len(rows):
+            for i in rows['date']:
+                receive_sum = 0
+                date.append(i[:16])
 
+                sql = "select isConfirmbyReceiver from sms_Message where notice_date_id =?"
+                print(i)
+                notice_pk.append(i)
+                cur.execute(sql, [i])
+                row = cur.fetchall()
+                for receive in row:
 
-        title = rows['title']
-        text = rows['text']
+                    receive_sum+=receive[0]
+                if receive_sum!=0:
+                    rate.append(  round ( (receive_sum/len(row))* 100))
+                else:
+                    rate.append(0)
+                # row = pd.DataFrame(row)
 
-        history_data= zip(date,title,text)
-
-        request.session['user'] = user_id
-        ## 공지 보낸 페이지 여기 까지
-
-
-        ##=========== 유저 목록 데이터 ============
-
-        sql = "select * from sms_Message_User where message_User_id_id =?"
-        cur.execute(sql, [user_id])
-        rows = cur.fetchall()
-        rows = pd.DataFrame(rows)
-
-        rows.rename(columns={0: "user_phoneNumber", 1: "user_name", 2: "user_dong",3:"user_hosu"}, inplace=True)
-
-
-
-        user_phoneNumber = rows['user_phoneNumber']
-        user_name = rows['user_name']
-        user_dong = rows['user_dong']
-        user_hosu = rows['user_hosu']
-
-        sql = "select distinct user_dong from sms_Message_User where message_User_id_id =?"
-        cur.execute(sql, [user_id])
-
-        rows = cur.fetchall()
-        dong_list = []
-        group_list = {}
+            print(rate)
 
 
-        for i in range(len(rows)):
-            dong_list.append(rows[i][0])
-            group_list[rows[i][0]]=[]
+            title = rows['title']
+            text = rows['text']
 
 
 
-        sql = "select  user_dong, user_hosu from sms_Message_User where message_User_id_id =?"
-        cur.execute(sql, [user_id])
-
-        rows = cur.fetchall()
+            request.session['user'] = user_id
+            ## 공지 보낸 페이지 여기 까지
 
 
-        for i in range(len(rows)):
-            group_list[rows[i][0]].append(rows[i][1])
+            ##=========== 유저 목록 데이터 ============
 
+            sql = "select * from sms_Message_User where message_User_id_id =?"
+            cur.execute(sql, [user_id])
+            rows = cur.fetchall()
+            rows = pd.DataFrame(rows)
 
-
-
-
-
-        user_data = zip(user_phoneNumber, user_name, user_dong,user_hosu)
+            rows.rename(columns={0: "user_phoneNumber", 1: "user_name", 2: "user_dong",3:"user_hosu"}, inplace=True)
 
 
 
+            user_phoneNumber = rows['user_phoneNumber']
+            user_name = rows['user_name']
+            user_dong = rows['user_dong']
+            user_hosu = rows['user_hosu']
 
-        return render(request, 'sms/index.html',{"history_data":history_data, "user_data":user_data,"dong_list":dong_list,"group_list":sorted(group_list.items())})
+            sql = "select distinct user_dong from sms_Message_User where message_User_id_id =?"
+            cur.execute(sql, [user_id])
+
+            rows = cur.fetchall()
+            dong_list = []
+            group_list = {}
+
+
+            for i in range(len(rows)):
+                dong_list.append(rows[i][0])
+                group_list[rows[i][0]]=[]
+
+
+
+            sql = "select  user_dong, user_hosu from sms_Message_User where message_User_id_id =?"
+            cur.execute(sql, [user_id])
+
+            rows = cur.fetchall()
+
+
+            for i in range(len(rows)):
+                group_list[rows[i][0]].append(rows[i][1])
+
+            history_data = zip(date, title, text,rate,notice_pk)
+
+            user_data = zip(user_phoneNumber, user_name, user_dong,user_hosu,)
+
+
+
+
+            return render(request, 'sms/index.html',{"history_data":history_data, "user_data":user_data,
+                                                     "dong_list":dong_list,"group_list":sorted(group_list.items()),"rate":rate})
+        return render(request, 'sms/index.html')
     # conn = sqlite3.connect('./db.sqlite3')
     # cur = conn.cursor()
     # sql = "select distinct user_dong from  main.sms_message_user"
@@ -144,6 +164,9 @@ def createNotice(request):
         conn = sqlite3.connect('./db.sqlite3')
         cur = conn.cursor()
         user_id = request.session.get('user')
+        insert = request.GET.get('insert')
+        delete = request.GET.get('del')
+
 
 
         sql = "select distinct user_dong from sms_Message_User where message_User_id_id =?"
@@ -152,6 +175,19 @@ def createNotice(request):
         rows = cur.fetchall()
         dong_list = []
         group_list = {}
+        insert_list = request.GET.getlist('input')
+        dong = request.GET.get('group')
+
+        if insert=="등록":
+
+
+
+            insert_list.append(dong)
+        elif 0!= len(insert_list):
+            insert_list.pop(-1)
+
+
+
 
         for i in range(len(rows)):
             dong_list.append(rows[i][0])
@@ -169,7 +205,7 @@ def createNotice(request):
 
 
 
-        return render(request,'sms/createNotice.html',{"dong_list":dong_list,"group_list":sorted(group_list.items())})
+        return render(request,'sms/createNotice.html',{"dong_list":dong_list,"group_list":sorted(group_list.items()), "insert_list":insert_list})
     if request.method == 'POST':
         # phone_number = request.POST.getlist('phone_number')
         # name = request.POST.getlist('name')
@@ -186,6 +222,7 @@ def createNotice(request):
 
         now = datetime.datetime.now()
         nowDatetime = now.strftime('%Y-%m-%d %H:%M:%S')
+        print(nowDatetime)
 
 
         sql = "insert into sms_notice (notice_date,notice_title,notice_text,notice_id_id) values (?,?,?,?)"
@@ -196,13 +233,18 @@ def createNotice(request):
 
         # 알림톡 수신자 data 가져오기
         group = request.POST.get('group')
-        if group == '전체':
+        insert_list = request.POST.getlist('send')
+        my_set = set(insert_list)  # 집합set으로 변환
+        insert_list = list(my_set)  # list로 변환
+
+
+        if "전체"  in insert_list :
             sql = "select * from  main.sms_message_user"
             cur.execute(sql)
         else:
-            sql = "select * from  main.sms_message_user where user_dong = ? "
+            sql = "select * from  main.sms_message_user where user_dong in (?) "
 
-            cur.execute(sql, [group])
+            cur.execute(sql, insert_list)
 
         rows = cur.fetchall()
 
@@ -238,6 +280,23 @@ def createNotice(request):
     return HttpResponseRedirect(
         reverse('sms:index', ))
 
+
+
+def noticeDetail(request,notice_date):
+    if request.method == "GET":
+        conn = sqlite3.connect('./db.sqlite3')
+        cur = conn.cursor()
+
+        print(notice_date)
+        sql = "select * from sms_Message where notice_date_id = ?"
+        cur.execute(sql,[str(notice_date)])
+
+        rows = cur.fetchall()
+        print(rows)
+        dong_list = []
+        group_list = {}
+
+        return render(request, 'sms/noticeDetail.html')
 
 def register(request):
 

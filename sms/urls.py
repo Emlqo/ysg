@@ -6,7 +6,7 @@ urlpatterns = [
     path('index/', views.index, name='index'),
     path('submit/', views.submit, name='submit'),
     path('message_User_insert/', views.message_User_insert, name='message_User_insert'),
-    path('<str:notice_id>/<str:notice_url>', views.notice_view, name='url'),
+
 
     path('admin/', views.admin, name='admin'),
     path('login/', views.login, name='login'),
@@ -15,6 +15,7 @@ urlpatterns = [
     path('upload/', views.upload, name='upload'),
     path('createNotice/', views.createNotice, name='createNotice'),
     path('insert_notice/', views.insert_notice, name='insert_notice'),
+    path('noticeDetail/<str:notice_date>', views.noticeDetail, name='noticeDetail'),
 
 
 ]
