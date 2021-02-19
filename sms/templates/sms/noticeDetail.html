@@ -78,7 +78,7 @@
 											</select>
 										</div>
 										<div class="progress mb-4">
-											<span class="progress-value">50%</span>
+											<span class="progress-value">{{rate}}%</span>
 											<div class="progress-bar progress-bar-striped bg-warning" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
 										</div>
 										<!-- 전체 -->
@@ -86,17 +86,11 @@
 											<div class="card-body">
 												<div class="row no-gutters align-items-center">
 													<div class="col mr-2">
-														<div class="text-xs font-weight-bold text-primary text-uppercase mb-1">전체(10세대)</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">101동 101호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">101동 102호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">101동 103호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">101동 104호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">101동 105호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">201동 101호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">201동 102호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">201동 103호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">201동 104호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">201동 105호</div>
+														<div class="text-xs font-weight-bold text-primary text-uppercase mb-1">전체({{total_len}}세대)</div>
+														{% for key, values in total %}
+															 {% csrf_token %}
+														<div class="h5 mb-0 font-weight-bold text-gray-800">{{key}}동 {{values}}호</div>
+														{% endfor %}
 													</div>
 												</div>
 											</div>
@@ -106,12 +100,10 @@
 											<div class="card-body">
 												<div class="row no-gutters align-items-center">
 													<div class="col mr-2">
-														<div class="text-xs font-weight-bold text-success text-uppercase mb-1">수신자(5세대)</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">101동 101호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">101동 102호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">101동 103호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">101동 104호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">101동 105호</div>
+														<div class="text-xs font-weight-bold text-success text-uppercase mb-1">수신자({{verify_len}}세대)</div>
+															{% for key, values in verify %}
+														<div class="h5 mb-0 font-weight-bold text-gray-800">{{key}}동 {{values}}호</div>
+														{% endfor %}
 													</div>
 												</div>
 											</div>
@@ -121,12 +113,10 @@
 											<div class="card-body">
 												<div class="row no-gutters align-items-center">
 													<div class="col mr-2">
-														<div class="text-xs font-weight-bold text-danger text-uppercase mb-1">미수신자(5세대)</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">201동 101호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">201동 102호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">201동 103호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">201동 104호</div>
-														<div class="h5 mb-0 font-weight-bold text-gray-800">201동 105호</div>
+														<div class="text-xs font-weight-bold text-danger text-uppercase mb-1">미수신자({{Nverify_len}}세대)</div>
+															{% for key, values in Nverify %}
+														<div class="h5 mb-0 font-weight-bold text-gray-800">{{key}}동 {{values}}호</div>
+														{% endfor %}
 													</div>
 												</div>
 											</div>
@@ -139,11 +129,11 @@
 							<div class="col">
 								<div class="card shadow mb-4">
 									<div class="card-header py-3">
-										<h6 class="m-0 font-weight-bold text-primary">승강기 점검 알림</h6>
+										<h6 class="m-0 font-weight-bold text-primary">{{title}}</h6>
 									</div>
 									<div class="card-body">
 										<div class="mb-4">
-											<p>101동 부터 106동까지 순차적으로 점검합니다. 상세한 시간은 첨부된 사진 참조해주시길 바랍니다. 101동 부터 106동까지 순차적으로 점검합니다. 상세한 시간은 첨부된 사진 참조해주시길 바랍니다. 101동 부터 106동까지 순차적으로 점검합니다. 상세한 시간은 첨부된 사진 참조해주시길 바랍니다.<p>
+											<p>{{text}}<p>
 										</div>
 										<div class="row mb-4 text-center">
 											<div class="col">

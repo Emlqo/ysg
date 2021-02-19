@@ -282,21 +282,53 @@ def createNotice(request):
 
 
 
-def noticeDetail(request,notice_date):
+def noticeDetail(request,notice_date,rate):
     if request.method == "GET":
         conn = sqlite3.connect('./db.sqlite3')
         cur = conn.cursor()
+
+        sql = "select * from sms_Notice where notice_date = ?"
+        cur.execute(sql,[str(notice_date)])
+        rows = cur.fetchall()
+        print(rows[0][1])
+        title = rows[0][1]
+
+
 
         print(notice_date)
         sql = "select * from sms_Message where notice_date_id = ?"
         cur.execute(sql,[str(notice_date)])
 
-        rows = cur.fetchall()
-        print(rows)
-        dong_list = []
-        group_list = {}
+        total = {}
+        verify={}
+        Nverify={}
 
-        return render(request, 'sms/noticeDetail.html')
+        rows = cur.fetchall()
+        for data in rows:
+            sql = "select * from sms_Message_User where user_phoneNumber = ?"
+            cur.execute(sql, [str(data[-1])])
+            row = cur.fetchall()
+
+            total[row[0][2]] = row[0][3]  ## 동    호수 저장 딕셔너리
+
+
+            if data[2]==0:
+                Nverify[row[0][2]] = row[0][3]
+
+            else:
+                verify[row[0][2]] = row[0][3]
+
+
+        text =rows[0][0]
+
+
+
+
+        return render(request, 'sms/noticeDetail.html',{"title":title,"text":text,"rate":rate,
+                                                        "total":sorted(total.items()),"total_len":len(total),
+                                                        "verify":sorted(verify.items()),
+                                                        "verify_len":len(verify),
+                                                        "Nverify_len":len(Nverify),"Nverify":sorted(Nverify.items())})
 
 def register(request):
 
@@ -464,115 +496,7 @@ def message_User_insert(request):
 
 
 
-
-
-def submit(request):
-
-    if request.method =='POST':
-        # phone_number = request.POST.getlist('phone_number')
-        # name = request.POST.getlist('name')
-
-        conn = sqlite3.connect('./db.sqlite3')
-        cur = conn.cursor()
-
-        # 공지 DB Insert
-
-        notice_text = request.POST.get('notice_text')
-        notice_title = request.POST.get('notice_title')
-        notice_id = request.POST.get('notice_id')
-        notice_ps = request.POST.get('notice_ps')
-
-        now = datetime.datetime.now()
-        nowDatetime = now.strftime('%Y-%m-%d %H:%M:%S')
-
-
-        # sender_User = Sender_User()
-        # notice = Notice()
-        # notice.notice_id = sender_User
-        # notice.notice_date = nowDatetime
-        # notice.notice_title = request.POST.get('notice_title')
-        # notice.notice_text = request.POST.get('notice_text')
-        # notice.notice_id = request.POST.get('notice_id')
-        # notice.notice_ps = request.POST.get('notice_ps')
-        # notice.save()
-
-
-        sql = "insert into sms_notice (notice_date,notice_title,notice_text,notice_id_id,notice_ps) values (?,?,?,?,?)"
-
-        cur.execute(sql, [nowDatetime, str(notice_title),  str(notice_text),str(notice_id),str(notice_ps)])
-
-        conn.commit()
-
-
-        phone_number = request.POST.get('phone_number')
-        if phone_number=='':
-
-            # 알림톡 수신자 data 가져오기
-            group = request.POST.get('group')
-            if group == '전체':
-                sql = "select * from  main.sms_message_user"
-                cur.execute(sql)
-            else:
-                sql = "select * from  main.sms_message_user where user_group = ? "
-
-                cur.execute(sql,[group])
-
-            rows = cur.fetchall()
-
-            rows = pd.DataFrame(rows)
-
-            phone_number_list = rows[0]
-            name = rows[1]
-
-        else:
-            phone_number_list =[]
-            phone_number_list.append(phone_number )
-            sql = "select * from  main.sms_message_user where user_phoneNumber = ? "
-
-            cur.execute(sql, [phone_number])
-            rows = cur.fetchall()
-
-            rows = pd.DataFrame(rows)
-            name = rows[1]
-
-
-
-
-        for img in request.FILES.getlist('imgs'):
-            # Photo 객체를 하나 생성한다.
-            # photo = Photo()
-            # # 외래키로 현재 생성한 Notice의 기본키를 참조한다.
-            # photo.notice_date = notice
-            # # imgs로부터 가져온 이미지 파일 하나를 저장한다.
-            # photo.image = img
-            # # 데이터베이스에 저장
-            # photo.save()
-
-            sql = "insert into sms_photo (notice_date_id,image) values (?,?)"
-
-            cur.execute(sql, [nowDatetime,str(img)])
-
-            conn.commit()
-
-
-
-
-        cur.close()
-        conn.close()
-
-
-        # limit_time = request.POST.get('limit_time')
-        send = katalk_send(name, phone_number_list , str( notice_text) , str( notice_title) , str( "12시") , str(notice_id) ,str(nowDatetime) )
-        send.send()
-
-
-
-    return HttpResponseRedirect(
-             reverse('sms:index', ))
-
-
-
-def notice_view(request,notice_id ,notice_url):
+def m_noticeDetail(request,notice_url):
     if request.method == 'GET':
         print(notice_url)
 
@@ -580,42 +504,91 @@ def notice_view(request,notice_id ,notice_url):
 
         conn = sqlite3.connect('./db.sqlite3')
         cur = conn.cursor()
-        # print(parse.quote(notice_url))
-        # notice_url =  str(parse.quote(notice_url).lower())
-        sql = "select  user_phoneNumber_id from main.sms_message WHERE notice_url  = ?"
-       # print(notice_url)  ## 2021-01-27 16:17:5001082745538      날짜 pk 랑 휴대전화 나눠야함
+
+        sql = "select user_phoneNumber_id from sms_message WHERE notice_url  = ?"
+
         cur.execute(sql,[notice_url])
         rows = cur.fetchall()
 
-
-
-        #
-        # STATIC_ROOT = BASE_DIR.joinpath('static')
-        # STATIC_URL = '/static/'
         now = datetime.datetime.now()
         nowDatetime = now.strftime('%Y-%m-%d %H:%M:%S')
 
-        cur.execute("UPDATE main.sms_message SET isConfirmbyReceiver = True , notice_Confirm_date = ? WHERE user_phoneNumber_id = ? ",[nowDatetime,rows[0][0]])
+        cur.execute("UPDATE sms_message SET isConfirmbyReceiver = True , notice_Confirm_date = ? WHERE user_phoneNumber_id = ? ",[nowDatetime,rows[0][0]])
 
 
         message_User =  get_object_or_404(Message_User,pk=rows[0][0])
 
         message = get_object_or_404(Message,pk=notice_url)
+        print(notice_url[:19])
 
-        notice = get_object_or_404(Notice, pk=notice_url[:19])
-        sql = "select  image from main.sms_Photo WHERE notice_date_id  = ?"
-        # print(notice_url)  ## 2021-01-27 16:17:5001082745538      날짜 pk 랑 휴대전화 나눠야함
+        # sql = "select  image from main.sms_Photo WHERE notice_date_id  = ?"
+        # # print(notice_url)  ## 2021-01-27 16:17:5001082745538      날짜 pk 랑 휴대전화 나눠야함
+        # cur.execute(sql, [notice_url[:19]])
+        # rows = cur.fetchall()
+
+        sql = "select * from sms_notice where notice_date =?"
         cur.execute(sql, [notice_url[:19]])
         rows = cur.fetchall()
+        print(rows)
+        title= rows[0][0]
+        sender_id =rows[0][-1]
 
-        photo =  rows[0][0]
+
+
+
         conn.commit()
         cur.close()
         conn.close()
 
-        #return  redirect('https://www.naver.com/')  ## 절대 경로 가능 => 기업 내
-
-        return render(request,'sms/nt_view.html',{'message' : message, 'notice' : notice , 'message_User' : message_User,'photo':photo} )
+        return render(request, 'sms/m_noticeDetail.html',
+                      {'message': message, 'message_User': message_User, "title":title,"sender_id":sender_id ,"date":notice_url[:19]})
+    else:
+        return render(request, 'sms/m_noticeDetail.html')
+#
+# def notice_view(request,notice_id ,notice_url):
+#     if request.method == 'GET':
+#         print(notice_url)
+#
+#
+#
+#         conn = sqlite3.connect('./db.sqlite3')
+#         cur = conn.cursor()
+#         # print(parse.quote(notice_url))
+#         # notice_url =  str(parse.quote(notice_url).lower())
+#         sql = "select  user_phoneNumber_id from main.sms_message WHERE notice_url  = ?"
+#        # print(notice_url)  ## 2021-01-27 16:17:5001082745538      날짜 pk 랑 휴대전화 나눠야함
+#         cur.execute(sql,[notice_url])
+#         rows = cur.fetchall()
+#
+#
+#
+#         #
+#         # STATIC_ROOT = BASE_DIR.joinpath('static')
+#         # STATIC_URL = '/static/'
+#         now = datetime.datetime.now()
+#         nowDatetime = now.strftime('%Y-%m-%d %H:%M:%S')
+#
+#         cur.execute("UPDATE main.sms_message SET isConfirmbyReceiver = True , notice_Confirm_date = ? WHERE user_phoneNumber_id = ? ",[nowDatetime,rows[0][0]])
+#
+#
+#         message_User =  get_object_or_404(Message_User,pk=rows[0][0])
+#
+#         message = get_object_or_404(Message,pk=notice_url)
+#
+#         notice = get_object_or_404(Notice, pk=notice_url[:19])
+#         sql = "select  image from main.sms_Photo WHERE notice_date_id  = ?"
+#         # print(notice_url)  ## 2021-01-27 16:17:5001082745538      날짜 pk 랑 휴대전화 나눠야함
+#         cur.execute(sql, [notice_url[:19]])
+#         rows = cur.fetchall()
+#
+#         photo =  rows[0][0]
+#         conn.commit()
+#         cur.close()
+#         conn.close()
+#
+#         #return  redirect('https://www.naver.com/')  ## 절대 경로 가능 => 기업 내
+#
+#         return render(request,'sms/m_noticeDetail.html',{'message' : message, 'notice' : notice , 'message_User' : message_User,'photo':photo} )
 
 
 def admin(request, notice_id):

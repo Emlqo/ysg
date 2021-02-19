@@ -4,7 +4,7 @@ from . import views
 app_name ='sms'
 urlpatterns = [
     path('index/', views.index, name='index'),
-    path('submit/', views.submit, name='submit'),
+
     path('message_User_insert/', views.message_User_insert, name='message_User_insert'),
 
 
@@ -15,7 +15,8 @@ urlpatterns = [
     path('upload/', views.upload, name='upload'),
     path('createNotice/', views.createNotice, name='createNotice'),
     path('insert_notice/', views.insert_notice, name='insert_notice'),
-    path('noticeDetail/<str:notice_date>', views.noticeDetail, name='noticeDetail'),
+    path('noticeDetail/<str:notice_date>/<str:rate>', views.noticeDetail, name='noticeDetail'),
+    path('m_noticeDetail/<str:notice_url>/', views.m_noticeDetail, name='noticeDetail'),
 
 
 ]
