@@ -11,11 +11,12 @@ import json
 # 다만, 변수처리하지 않고 고정값으로 입력하여 템플릿 신청하셨다면 신청하신 url그대로 사용해주셔야 합니다ㅣ.
 #  send = katalk_send(str(name), str( phone_number) , str( notice_text) , str( notice_title) , str( limit_time)  )
 class katalk_send:
-    def __init__(self, name, sms_receiver , notice_text  ,notice_title ,limit_time, notice_id , nowDatetime):
+    def __init__(self, name, sms_receiver , user_dong_hosu_list, notice_text  ,notice_title ,limit_time, notice_id , nowDatetime):
 
 
         self.name = name
         self.sms_receiver = sms_receiver
+        self.user_dong_hosu_list = user_dong_hosu_list
 
         self.sms_receiver_len = len(sms_receiver)
         self.notice_text = notice_text
@@ -42,11 +43,11 @@ class katalk_send:
         button_info = []
         for i in range(self.sms_receiver_len):
 
-            button_info.append( {'button': [{'name': '확인하기',  # 버튼명
+            button_info.append( {'button': [{'name': '공지 확인',  # 버튼명
                                        'linkType': 'WL',  # DS, WL, AL, BK, MD
                                        'linkTypeName': '웹링크',  # 배송조회, 웹링크, 앱링크, 봇키워드, 메시지전달 중에서 1개
-                                       'linkM': 'http://3.140.216.53:8000/' +self.nowDatetime+ str(self.sms_receiver[i]),  # WL일 때 필수
-                                       'linkP': 'http://3.140.216.53:8000/'+self.nowDatetime+str(self.sms_receiver[i]),  # WL일 때 필수
+                                       'linkM': 'http://13.58.164.35:8000/' +self.nowDatetime+ str(self.user_dong_hosu_list[i]+self.notice_id),  # WL일 때 필수
+                                       'linkP': 'http://13.58.164.35:8000/'+self.nowDatetime+str(self.user_dong_hosu_list[i]+self.notice_id),  # WL일 때 필수
                                        # 'linkI': 'IOS app link', # AL일 때 필수
                                        # 'linkA': 'Android app link' # AL일 때 필수
                                        }]})
@@ -78,7 +79,7 @@ class katalk_send:
                     'userid': 'bestysg',  # 알리고 사이트 아이디
                     'token': create_token_response.json()['token'],  # 생성한 토큰
                     'senderkey': '0677997695e39d55cdac33f71b8d8cd7294c9098',
-                    'tpl_code': 'TD_4836',  # 템플릿 코드
+                    'tpl_code': 'TD_6755',  # 템플릿 코드
                     'sender': '01039949826',  # 발신자 연락처,
                     # 'senddate': '19000131120130', # YYYYMMDDHHmmss
          #            'receiver_1' : '01082745538',
@@ -94,15 +95,15 @@ class katalk_send:
 
         for i in range(self.sms_receiver_len):
             sms_data['receiver_'+str(i+1)]=self.sms_receiver[i]
-            sms_data['message_'+str(i+1)] ="오손도손에서 공지가 도착 했습니다!!\n"\
-                                           +self.name[i]+'님\n'+self.notice_title+'\n'+self.limit_time+' 까지 열람 가능합니다.'
+            sms_data['message_'+str(i+1)] ="오손도손 에서 공지가 도착 했습니다!!\n"\
+                                           +self.name[i]+'님\n'+self.notice_title+'을\n'+self.limit_time+' 까지 열람 가능합니다.'
             sms_data['button_'+str(i+1)] =json.dumps(button_info[i])
-            sql = "insert into sms_Message ( individual_notice_text,notice_url  , notice_date_id, isConfirmbyReceiver ,user_phoneNumber_id ,notice_id_id,notice_Confirm_date)values (?,?,?,?,?,?,?)"
+            sql = "insert into sms_Message ( individual_notice_text,notice_url  , notice_pk_id, isConfirmbyReceiver ,user_pk_id ,notice_id_id,notice_Confirm_date)values (?,?,?,?,?,?,?)"
 
 
 
-            cur.execute(sql, [self.notice_text, str(self.nowDatetime+ str(self.sms_receiver[i])),
-                              str(self.nowDatetime), False, str(self.sms_receiver[i]), str(self.notice_id),str(self.nowDatetime)])
+            cur.execute(sql, [self.notice_text,self.nowDatetime + str(self.user_dong_hosu_list[i] + self.notice_id) ,
+                              str(self.nowDatetime+ self.notice_id), False, str(self.sms_receiver[i]+ self.notice_id), str(self.notice_id),str(self.nowDatetime)])
 
             conn.commit()
 

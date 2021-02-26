@@ -17,50 +17,55 @@ class Sender_User(models.Model):
 
 
 class Notice(models.Model):
-    notice_date = models.DateTimeField('date',primary_key=True )
+    notice_date = models.CharField(max_length=1200)
     notice_title =  models.CharField(max_length=200)
     notice_text = models.CharField(max_length=1200)
     notice_id= models.ForeignKey(Sender_User, on_delete=models.CASCADE)
-
+    notice_pk=models.CharField(max_length=250 ,primary_key=True , unique=True)  # notice_date + notice_id
 
 
     def __str__(self):
-        return str('%s' % (self.notice_date))
-
+        return str('%s' % (self.notice_pk))
 
 
 
 
 class Message_User(models.Model):
 
-    user_phoneNumber = models.CharField(max_length=200,primary_key=True , unique=True)
+
+    user_phoneNumber = models.CharField(max_length=200,)
     user_name =  models.CharField(max_length=200)
     user_dong = models.CharField(max_length=50, )
     user_hosu = models.CharField(max_length=50,)
     message_User_id=models.ForeignKey(Sender_User, on_delete=models.CASCADE)
+    user_pk = models.CharField(max_length=250,primary_key=True , unique=True) # user_dong +  user_hosu
+
+
 
     def __str__(self):
-        return str('%s %s' % (self.user_phoneNumber, self.user_name))
+        return str('%s ' % (self.user_pk))
+
+
 
 
 
 class Message(models.Model):
     individual_notice_text = models.CharField(max_length=1200)
     notice_url = models.CharField(max_length=600,primary_key=True , unique=True)
-    notice_date  =models.ForeignKey(Notice, on_delete=models.CASCADE)
+    notice_pk  =models.ForeignKey(Notice, on_delete=models.CASCADE)
     isConfirmbyReceiver =models.BooleanField(default=False)
-    user_phoneNumber =models.ForeignKey(Message_User, on_delete=models.CASCADE)
+    user_pk =models.ForeignKey(Message_User, on_delete=models.CASCADE)
     notice_id=models.ForeignKey(Sender_User, on_delete=models.CASCADE)
-    notice_Confirm_date = models.DateTimeField('date', blank=False, null=False)
+    notice_Confirm_date =models.CharField(max_length=1200, blank=False, null=False)
 
 
     def __str__(self):
-        return str('%s %s ' % (self.user_phoneNumber, self.notice_id))
+        return str('%s  ' % ( self.notice_url))
 
 
 
 class Photo(models.Model):
-    notice_date = models.ForeignKey(Notice, on_delete=models.CASCADE, null=True)
+    notice_pk = models.ForeignKey(Notice, on_delete=models.CASCADE, null=True)
     image = models.ImageField(upload_to='images/', blank=True, null=True)
 
 

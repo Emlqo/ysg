@@ -57,10 +57,10 @@ def index(request):
                 receive_sum = 0
                 date.append(i[:16])
 
-                sql = "select isConfirmbyReceiver from sms_Message where notice_date_id =?"
+                sql = "select isConfirmbyReceiver from sms_Message where notice_pk_id =?"
                 print(i)
-                notice_pk.append(i)
-                cur.execute(sql, [i])
+                notice_pk.append(i+" "+ user_id)
+                cur.execute(sql, [i+user_id])
                 row = cur.fetchall()
                 for receive in row:
 
@@ -119,8 +119,10 @@ def index(request):
             rows = cur.fetchall()
 
 
+
             for i in range(len(rows)):
                 group_list[rows[i][0]].append(rows[i][1])
+
 
             history_data = zip(date, title, text,rate,notice_pk)
 
@@ -129,8 +131,7 @@ def index(request):
 
 
 
-            return render(request, 'sms/index.html',{"history_data":history_data, "user_data":user_data,
-                                                     "dong_list":dong_list,"group_list":sorted(group_list.items()),"rate":rate})
+            return render(request, 'sms/index.html',{"history_data":history_data, "user_data":user_data,"dong_list":dong_list,"group_list":sorted(group_list.items()),"rate":rate})
         return render(request, 'sms/index.html')
     # conn = sqlite3.connect('./db.sqlite3')
     # cur = conn.cursor()
@@ -225,9 +226,9 @@ def createNotice(request):
         print(nowDatetime)
 
 
-        sql = "insert into sms_notice (notice_date,notice_title,notice_text,notice_id_id) values (?,?,?,?)"
+        sql = "insert into sms_notice (notice_date,notice_title,notice_text,notice_id_id,notice_pk) values (?,?,?,?,?)"
 
-        cur.execute(sql, [nowDatetime, str(notice_title), str(notice_text), str(user_id), ])
+        cur.execute(sql, [nowDatetime, str(notice_title), str(notice_text), str(user_id),nowDatetime +" "+str(user_id) ])
 
         conn.commit()
 
@@ -242,7 +243,9 @@ def createNotice(request):
             sql = "select * from  main.sms_message_user"
             cur.execute(sql)
         else:
-            sql = "select * from  main.sms_message_user where user_dong in (?) "
+            for i in range(len(insert_list)):
+
+                sql = "select * from  main.sms_message_user where user_dong in (?) "
 
             cur.execute(sql, insert_list)
 
@@ -250,8 +253,10 @@ def createNotice(request):
 
         rows = pd.DataFrame(rows)
 
+        print(rows)
         phone_number_list = rows[0]
         name = rows[1]
+        user_dong_hosu_list=rows[4]
 
     # for img in request.FILES.getlist('imgs'):
     #     # Photo 객체를 하나 생성한다.
@@ -273,7 +278,7 @@ def createNotice(request):
         conn.close()
 
         # limit_time = request.POST.get('limit_time')
-        send = katalk_send(name, phone_number_list, str(notice_text), str(notice_title), str("12시"), str(user_id),
+        send = katalk_send(name, phone_number_list,user_dong_hosu_list ,  str(notice_text), str(notice_title), str("12시"), str(user_id),
                            str(nowDatetime))
         send.send()
 
@@ -284,6 +289,9 @@ def createNotice(request):
 
 def noticeDetail(request,notice_date,rate):
     if request.method == "GET":
+        user_id = request.session.get('user')
+        print(user_id)
+
         conn = sqlite3.connect('./db.sqlite3')
         cur = conn.cursor()
 
@@ -305,8 +313,8 @@ def noticeDetail(request,notice_date,rate):
 
         rows = cur.fetchall()
         for data in rows:
-            sql = "select * from sms_Message_User where user_phoneNumber = ?"
-            cur.execute(sql, [str(data[-1])])
+            sql = "select * from sms_Message_User where user_phoneNumber = ? and  message_User_id = ?"
+            cur.execute(sql, [str(data[-1]), str(user_id)])
             row = cur.fetchall()
 
             total[row[0][2]] = row[0][3]  ## 동    호수 저장 딕셔너리
@@ -394,13 +402,20 @@ def upload(request):
 
                    # print(str(cell.value), "row_data")
                 row_data.append(user_id)
+                #print(row_data)
                 excel_data.append(row_data)
+
             del excel_data[0]
             for data in excel_data:
+                data.append(data[2]+" "+data[3])
+                print(data)
 
-                sql = "insert into sms_Message_User (user_phoneNumber,user_name,user_dong,user_hosu,message_User_id_id) values (?,?,?,?,?)"
+                sql = "insert into sms_Message_User (user_phoneNumber,user_name,user_dong,user_hosu,message_User_id_id ,user_pk) values (?,?,?,?,?,?)"
+                sql2 ="INSERT INTO sms_Message_User " \
+                      "(user_phoneNumber,user_name,user_dong,user_hosu,message_User_id_id ,user_pk)" \
+                      " values (?,?,?,?,?,?) ON CONFLICT(user_pk) DO UPDATE SET user_phoneNumber = '"+(data[0])+"',  user_name = '"+(data[1])+"'  "
 
-                cur.execute(sql, data)
+                cur.execute(sql2, data)
 
                 conn.commit()
 
@@ -412,8 +427,6 @@ def upload(request):
                 # message_User.user_hosu =
                 # message_User.message_User_id =
                 # message_User.save()
-
-
 
 
             # excel_data = list()
@@ -432,7 +445,7 @@ def upload(request):
             #     mapdict=['user_phoneNumber', 'user_name', 'user_dong','user_hosu','message_User_id'])
             request.session['user'] = user_id
             print(user_id)
-            return render(request, 'sms/index_test.html')
+            return render(request, 'sms/index.html')
         else:
 
             return HttpResponseBadRequest(form.is_valid())
@@ -530,7 +543,7 @@ def m_noticeDetail(request,notice_url):
         cur.execute(sql, [notice_url[:19]])
         rows = cur.fetchall()
         print(rows)
-        title= rows[0][0]
+        title= rows[0][1]
         sender_id =rows[0][-1]
 
 
