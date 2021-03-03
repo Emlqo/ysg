@@ -89,7 +89,7 @@ class katalk_send:
                     # 'failover': 'Y or N', # 실패시 대체문자 전송 여부(템플릿 신청시 대체문자 발송으로 설정하였더라도 Y로 입력해야합니다.)
                     # 'fsubject_1': '대체문자 제목', # 실패시 대체문자 제목
                     # 'fmessage_1': '대체문자 내용', # 실패시 대체문자 내용
-                    'testMode': 'N',  # 테스트 모드 적용여부(기본N), 실제 발송 X
+                    'testMode': 'Y',  # 테스트 모드 적용여부(기본N), 실제 발송 X
                     }
 
 
@@ -101,9 +101,8 @@ class katalk_send:
             sql = "insert into sms_Message ( individual_notice_text,notice_url  , notice_pk_id, isConfirmbyReceiver ,user_pk_id ,notice_id_id,notice_Confirm_date)values (?,?,?,?,?,?,?)"
 
 
-
             cur.execute(sql, [self.notice_text,self.nowDatetime + str(self.user_dong_hosu_list[i] + self.notice_id) ,
-                              str(self.nowDatetime+ self.notice_id), False, str(self.sms_receiver[i]+ self.notice_id), str(self.notice_id),str(self.nowDatetime)])
+                              str(self.nowDatetime+' '+self.notice_id), False, str(self.user_dong_hosu_list[i]), str(self.notice_id),str(self.nowDatetime)])
 
             conn.commit()
 

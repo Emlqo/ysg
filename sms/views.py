@@ -287,52 +287,84 @@ def createNotice(request):
 
 
 
-def noticeDetail(request,notice_date,rate):
+def noticeDetail(request,notice_pk):
     if request.method == "GET":
         user_id = request.session.get('user')
-        print(user_id)
+
 
         conn = sqlite3.connect('./db.sqlite3')
         cur = conn.cursor()
 
-        sql = "select * from sms_Notice where notice_date = ?"
-        cur.execute(sql,[str(notice_date)])
+        sql = "select * from sms_Notice where notice_pk = ?"
+        cur.execute(sql,[str(notice_pk)])
         rows = cur.fetchall()
-        print(rows[0][1])
+
         title = rows[0][1]
 
+        rows = pd.DataFrame(rows)
+
+        rows.rename(columns={0: "date", 1: "title", 2: "text"}, inplace=True)
+
+        rate = []
+
+        receive_sum = 0
+
+        sql = "select isConfirmbyReceiver from sms_Message where notice_pk_id =?"
+
+        day = rows['date']
+        cur.execute(sql, [str(rows['date'] + user_id)])
+        row = cur.fetchall()
+        ## 수신률 계산
+        for receive in row:
+            receive_sum += receive[0]
+        if receive_sum != 0:
+            rate.append(round((receive_sum / len(row)) * 100))
+        else:
+            rate.append(0)
+        # row = pd.DataFrame(row)
 
 
-        print(notice_date)
-        sql = "select * from sms_Message where notice_date_id = ?"
-        cur.execute(sql,[str(notice_date)])
+        ## 수신률 계산 끝
+
+
+        ## 메세지  미확인자 확인자 체크
+        sql = "select * from sms_Message where notice_pk_id = ?"
+        cur.execute(sql,[str(notice_pk)])
 
         total = {}
         verify={}
         Nverify={}
 
         rows = cur.fetchall()
-        for data in rows:
-            sql = "select * from sms_Message_User where user_phoneNumber = ? and  message_User_id = ?"
-            cur.execute(sql, [str(data[-1]), str(user_id)])
-            row = cur.fetchall()
 
-            total[row[0][2]] = row[0][3]  ## 동    호수 저장 딕셔너리
+        for data in rows:
+            sql = "select * from sms_Message_User where user_phoneNumber = ? and  message_User_id_id = ?"
+            cur.execute(sql, [str(data[-1]), str(user_id)])
+
+            dong_hosu=data[6].split(" ")
+
+            total[dong_hosu[0]] = dong_hosu[1]  ## 동    호수 저장 딕셔너리
 
 
             if data[2]==0:
-                Nverify[row[0][2]] = row[0][3]
+                Nverify[dong_hosu[0]] =dong_hosu[1]
 
             else:
-                verify[row[0][2]] = row[0][3]
+                verify[dong_hosu[0]] = dong_hosu[1]
 
 
         text =rows[0][0]
 
+        ## 메세지  미확인자 확인자 체크 끝
 
 
 
-        return render(request, 'sms/noticeDetail.html',{"title":title,"text":text,"rate":rate,
+
+
+
+
+
+        return render(request, 'sms/noticeDetail.html',{"title":title,"text":text,"rate":int(rate[0]),"day":str(day[0]) ,
                                                         "total":sorted(total.items()),"total_len":len(total),
                                                         "verify":sorted(verify.items()),
                                                         "verify_len":len(verify),
@@ -518,7 +550,7 @@ def m_noticeDetail(request,notice_url):
         conn = sqlite3.connect('./db.sqlite3')
         cur = conn.cursor()
 
-        sql = "select user_phoneNumber_id from sms_message WHERE notice_url  = ?"
+        sql = "select user_pk_id from sms_message WHERE notice_url  = ?"
 
         cur.execute(sql,[notice_url])
         rows = cur.fetchall()
@@ -526,7 +558,7 @@ def m_noticeDetail(request,notice_url):
         now = datetime.datetime.now()
         nowDatetime = now.strftime('%Y-%m-%d %H:%M:%S')
 
-        cur.execute("UPDATE sms_message SET isConfirmbyReceiver = True , notice_Confirm_date = ? WHERE user_phoneNumber_id = ? ",[nowDatetime,rows[0][0]])
+        cur.execute("UPDATE sms_message SET isConfirmbyReceiver = True , notice_Confirm_date = ? WHERE user_pk_id = ? ",[nowDatetime,rows[0][0]])
 
 
         message_User =  get_object_or_404(Message_User,pk=rows[0][0])
