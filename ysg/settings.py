@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'sms.apps.SmsConfig',
     'import_export',
-    'rest_framework',
+
 ]
 
 MIDDLEWARE = [

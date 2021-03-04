@@ -1,19 +1,17 @@
-from django import forms
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
-from django.views import generic
+
 import sqlite3
 import datetime
 
 import openpyxl, pyexcel
 from .models import Message, Message_User, Notice, Photo, Sender_User
 import pandas as pd
-from django.template import loader
+
 
 from .func.katalk_send import katalk_send
-# Create your views here.
-from urllib import parse
-from openpyxl import load_workbook
+
 from .forms import UploadFileForm
 
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseBadRequest
