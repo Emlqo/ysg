@@ -46,8 +46,8 @@ class katalk_send:
             button_info.append( {'button': [{'name': '공지 확인',  # 버튼명
                                        'linkType': 'WL',  # DS, WL, AL, BK, MD
                                        'linkTypeName': '웹링크',  # 배송조회, 웹링크, 앱링크, 봇키워드, 메시지전달 중에서 1개
-                                       'linkM': 'http://13.58.164.35:8000/' +self.nowDatetime+ str(self.user_dong_hosu_list[i]+self.notice_id),  # WL일 때 필수
-                                       'linkP': 'http://13.58.164.35:8000/'+self.nowDatetime+str(self.user_dong_hosu_list[i]+self.notice_id),  # WL일 때 필수
+                                       'linkM': 'http://13.58.164.35:8000/' +'sms/m_noticeDetail/'+self.nowDatetime+ str(self.user_dong_hosu_list[i]+self.notice_id),  # WL일 때 필수
+                                       'linkP': 'http://13.58.164.35:8000/'+'sms/m_noticeDetail/'+self.nowDatetime+str(self.user_dong_hosu_list[i]+self.notice_id),  # WL일 때 필수
                                        # 'linkI': 'IOS app link', # AL일 때 필수
                                        # 'linkA': 'Android app link' # AL일 때 필수
                                        }]})

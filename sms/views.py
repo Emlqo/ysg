@@ -59,10 +59,12 @@ def index(request):
                 date.append(i[:16])
 
                 sql = "select isConfirmbyReceiver from sms_Message where notice_pk_id =?"
-                print(i)
+
                 notice_pk.append(i+" "+ user_id)
-                cur.execute(sql, [i+user_id])
+                cur.execute(sql, [i+" "+ user_id])
+                print(i+" "+ user_id)
                 row = cur.fetchall()
+                print(row)
                 for receive in row:
 
                     receive_sum+=receive[0]
@@ -72,7 +74,7 @@ def index(request):
                     rate.append(0)
                 # row = pd.DataFrame(row)
 
-            print(rate)
+
 
 
             title = rows['title']
@@ -305,7 +307,7 @@ def noticeDetail(request,notice_pk):
 
         conn = sqlite3.connect('./db.sqlite3')
         cur = conn.cursor()
-
+        print(notice_pk)
         sql = "select * from sms_Notice where notice_pk = ?"
         cur.execute(sql,[str(notice_pk)])
         rows = cur.fetchall()
@@ -315,19 +317,22 @@ def noticeDetail(request,notice_pk):
         rows = pd.DataFrame(rows)
 
         rows.rename(columns={0: "date", 1: "title", 2: "text"}, inplace=True)
-
+        day = rows['date']
         rate = []
 
         receive_sum = 0
 
         sql = "select isConfirmbyReceiver from sms_Message where notice_pk_id =?"
 
-        day = rows['date']
-        cur.execute(sql, [str(rows['date'] + user_id)])
+
+        cur.execute(sql, [notice_pk])
+
         row = cur.fetchall()
+
         ## 수신률 계산
         for receive in row:
             receive_sum += receive[0]
+            print(receive[0])
         if receive_sum != 0:
             rate.append(round((receive_sum / len(row)) * 100))
         else:
