@@ -15,6 +15,9 @@ from .func.katalk_send import katalk_send
 from .forms import UploadFileForm
 
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
+
+
 
 
 #-------------------함수 기반 view---------------------
@@ -29,7 +32,7 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpRespons
 # render 적용
 
 
-
+@csrf_exempt
 def index(request):
     if request.method == 'GET':
         conn = sqlite3.connect('./db.sqlite3')
@@ -146,6 +149,7 @@ def index(request):
     #
     # return render(request, 'sms/index_test.html',{'kind': group_list})
 
+@csrf_exempt
 def insert_notice(request):
     if request.method == 'POST':
 
@@ -156,7 +160,7 @@ def insert_notice(request):
         return render(request, 'sms/createNotice.html')
 
 
-
+@csrf_exempt
 def createNotice(request):
 
     if request.method == 'GET':
@@ -293,7 +297,7 @@ def createNotice(request):
         reverse('sms:index', ))
 
 
-
+@csrf_exempt
 def noticeDetail(request,notice_pk):
     if request.method == "GET":
         user_id = request.session.get('user')
@@ -376,11 +380,11 @@ def noticeDetail(request,notice_pk):
                                                         "verify":sorted(verify.items()),
                                                         "verify_len":len(verify),
                                                         "Nverify_len":len(Nverify),"Nverify":sorted(Nverify.items())})
-
+@csrf_exempt
 def register(request):
 
     return render(request, 'sms/register.html')
-
+@csrf_exempt
 def register_submit(request):
     try:
 
@@ -411,6 +415,7 @@ def register_submit(request):
     except:
         return HttpResponse("ID가 중복 되거나 기타 오류 입니다.")
 
+@csrf_exempt
 def upload(request):
 
     if request.method == "POST":
@@ -493,7 +498,7 @@ def upload(request):
 
 
 
-
+@csrf_exempt
 def login(request):
     if request.method == 'GET':
         return render(request, 'sms/login.html')
@@ -524,7 +529,7 @@ def login(request):
 
     #return render(request, 'sms/login_test.html') ## form
 
-
+@csrf_exempt
 def message_User_insert(request):
 
     if request.method == "POST":
@@ -546,7 +551,7 @@ def message_User_insert(request):
 
 
 
-
+@csrf_exempt
 def m_noticeDetail(request,notice_url):
     if request.method == 'GET':
 
@@ -603,82 +608,3 @@ def m_noticeDetail(request,notice_url):
                       {'message': message, 'message_User': message_User, "title":title,"sender_id":sender_id ,"date":notice_url[:19],'notice':notice})
     else:
         return render(request, 'sms/m_noticeDetail.html')
-#
-# def notice_view(request,notice_id ,notice_url):
-#     if request.method == 'GET':
-#         print(notice_url)
-#
-#
-#
-#         conn = sqlite3.connect('./db.sqlite3')
-#         cur = conn.cursor()
-#         # print(parse.quote(notice_url))
-#         # notice_url =  str(parse.quote(notice_url).lower())
-#         sql = "select  user_phoneNumber_id from main.sms_message WHERE notice_url  = ?"
-#        # print(notice_url)  ## 2021-01-27 16:17:5001082745538      날짜 pk 랑 휴대전화 나눠야함
-#         cur.execute(sql,[notice_url])
-#         rows = cur.fetchall()
-#
-#
-#
-#         #
-#         # STATIC_ROOT = BASE_DIR.joinpath('static')
-#         # STATIC_URL = '/static/'
-#         now = datetime.datetime.now()
-#         nowDatetime = now.strftime('%Y-%m-%d %H:%M:%S')
-#
-#         cur.execute("UPDATE main.sms_message SET isConfirmbyReceiver = True , notice_Confirm_date = ? WHERE user_phoneNumber_id = ? ",[nowDatetime,rows[0][0]])
-#
-#
-#         message_User =  get_object_or_404(Message_User,pk=rows[0][0])
-#
-#         message = get_object_or_404(Message,pk=notice_url)
-#
-#         notice = get_object_or_404(Notice, pk=notice_url[:19])
-#         sql = "select  image from main.sms_Photo WHERE notice_date_id  = ?"
-#         # print(notice_url)  ## 2021-01-27 16:17:5001082745538      날짜 pk 랑 휴대전화 나눠야함
-#         cur.execute(sql, [notice_url[:19]])
-#         rows = cur.fetchall()
-#
-#         photo =  rows[0][0]
-#         conn.commit()
-#         cur.close()
-#         conn.close()
-#
-#         #return  redirect('https://www.naver.com/')  ## 절대 경로 가능 => 기업 내
-#
-#         return render(request,'sms/m_noticeDetail.html',{'message' : message, 'notice' : notice , 'message_User' : message_User,'photo':photo} )
-
-
-def admin(request, notice_id):
-        conn = sqlite3.connect('./db.sqlite3')
-        cur = conn.cursor()
-        # print(parse.quote(notice_url))
-        # notice_url =  str(parse.quote(notice_url).lower())
-        name_list = []
-        sql = "select * from  sms_message where notice_id_id  = ?"
-
-        cur.execute(sql, [notice_id])
-        rows = cur.fetchall()
-        for name in rows:
-
-            sql = "select user_name from  sms_Message_User where user_phoneNumber = ?"
-
-            cur.execute(sql, [name[5]])
-            name_list.append(cur.fetchall()[0])
-
-
-
-        conn.commit()
-        cur.close()
-        conn.close()
-        rows =pd.DataFrame(rows)
-        rows['name']=name_list
-
-        rows.rename(columns={0:"notice_text", 1:"날짜 + 번호 URL",2:"isConfirmbyReceiver",3:"날짜"}, inplace=True)
-
-        del rows[4]
-        del rows[5]
-        result = rows.to_html()
-
-        return render(request, 'sms/admin_nt_view.html', {'result': result})
