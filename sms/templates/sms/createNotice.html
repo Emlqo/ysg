@@ -149,7 +149,7 @@
 							<!-- Generation List -->
 
 
-							<form action="{% url 'sms:createNotice' %}" method="post">
+							<form action="{% url 'sms:createNotice' %}" method="post" enctype="multipart/form-data">
 								{% csrf_token %}
 							<div class="col">
 								<div class="card shadow mb-4">
@@ -183,16 +183,16 @@
 											</div>
 										</div>
 										<div class="text-right">
-											<form>
+
 												<span class="btn btn-secondary btn-icon-split" onclick="document.getElementById('imgBtn').click();">
 													<span class="icon text-white-50">
 														<i class="fas fa-fw fa-chart-area"></i>
 													</span>
 													<span class="text">사진 첨부하기</span>
-													<input type="file" style="display:none" id="imgBtn">
+													<input type="file"  name ="imgs"  multiple>
 												</span>
 
-											</form>
+
 
 									</div>
 									<div class="card-footer py-3">

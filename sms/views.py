@@ -166,7 +166,6 @@ def createNotice(request):
         cur = conn.cursor()
         user_id = request.session.get('user')
         insert = request.GET.get('insert')
-        delete = request.GET.get('del')
 
 
 
@@ -226,11 +225,20 @@ def createNotice(request):
         print(nowDatetime)
 
 
-        sql = "insert into sms_notice (notice_date,notice_title,notice_text,notice_id_id,notice_pk) values (?,?,?,?,?)"
+        # sql = "insert into sms_notice (notice_date,notice_title,notice_text,notice_id_id,notice_pk) values (?,?,?,?,?)"
+        #
+        # cur.execute(sql, [nowDatetime, str(notice_title), str(notice_text), str(user_id),nowDatetime +" "+str(user_id) ])
+        #
+        # conn.commit()
 
-        cur.execute(sql, [nowDatetime, str(notice_title), str(notice_text), str(user_id),nowDatetime +" "+str(user_id) ])
+        notice = Notice()
+        notice.notice_date = nowDatetime
+        notice.notice_title = str(notice_title)
+        notice.notice_text =str(notice_text)
+        notice.notice_id_id = str(user_id)
+        notice.notice_pk = nowDatetime +" "+str(user_id)
+        notice.save()
 
-        conn.commit()
 
         # 알림톡 수신자 data 가져오기
         group = request.POST.get('group')
@@ -258,24 +266,25 @@ def createNotice(request):
         name = rows[1]
         user_dong_hosu_list=rows[4]
 
-    # for img in request.FILES.getlist('imgs'):
-    #     # Photo 객체를 하나 생성한다.
-    #     # photo = Photo()
-    #     # # 외래키로 현재 생성한 Notice의 기본키를 참조한다.
-    #     # photo.notice_date = notice
-    #     # # imgs로부터 가져온 이미지 파일 하나를 저장한다.
-    #     # photo.image = img
-    #     # # 데이터베이스에 저장
-    #     # photo.save()
-    #
-    #     sql = "insert into sms_photo (notice_date_id,image) values (?,?)"
-    #
-    #     cur.execute(sql, [nowDatetime, str(img)])
-    #
-    #     conn.commit()
+        for img in request.FILES.getlist('imgs'):
 
-        cur.close()
-        conn.close()
+            #Photo 객체를 하나 생성한다.
+            photo = Photo()
+            # 외래키로 현재 생성한 Notice의 기본키를 참조한다.
+            photo.notice_pk = notice
+            # imgs로부터 가져온 이미지 파일 하나를 저장한다.
+            photo.image = img
+            # 데이터베이스에 저장
+            photo.save()
+
+        # sql = "insert into sms_photo (notice_date_id,image) values (?,?)"
+        #
+        # cur.execute(sql, [nowDatetime, str(img)])
+        #
+        # conn.commit()
+        #
+        # cur.close()
+        # conn.close()
 
         # limit_time = request.POST.get('limit_time')
         send = katalk_send(name, phone_number_list,user_dong_hosu_list ,  str(notice_text), str(notice_title), str("12시"), str(user_id),
@@ -442,7 +451,6 @@ def upload(request):
                 data.append(data[2]+" "+data[3])
                 print(data)
 
-                sql = "insert into sms_Message_User (user_phoneNumber,user_name,user_dong,user_hosu,message_User_id_id ,user_pk) values (?,?,?,?,?,?)"
                 sql2 ="INSERT INTO sms_Message_User " \
                       "(user_phoneNumber,user_name,user_dong,user_hosu,message_User_id_id ,user_pk)" \
                       " values (?,?,?,?,?,?) ON CONFLICT(user_pk) DO UPDATE SET user_phoneNumber = '"+(data[0])+"',  user_name = '"+(data[1])+"'  "
@@ -543,7 +551,7 @@ def message_User_insert(request):
 
 def m_noticeDetail(request,notice_url):
     if request.method == 'GET':
-        print(notice_url)
+
 
 
 
@@ -564,20 +572,28 @@ def m_noticeDetail(request,notice_url):
         message_User =  get_object_or_404(Message_User,pk=rows[0][0])
 
         message = get_object_or_404(Message,pk=notice_url)
-        print(notice_url[:19])
 
-        # sql = "select  image from main.sms_Photo WHERE notice_date_id  = ?"
-        # # print(notice_url)  ## 2021-01-27 16:17:5001082745538      날짜 pk 랑 휴대전화 나눠야함
-        # cur.execute(sql, [notice_url[:19]])
-        # rows = cur.fetchall()
+
+
+
+
 
         sql = "select * from sms_notice where notice_date =?"
         cur.execute(sql, [notice_url[:19]])
         rows = cur.fetchall()
-        print(rows)
+
         title= rows[0][1]
         sender_id =rows[0][-1]
 
+        # sql = "select  image from main.sms_Photo WHERE notice_pk_id  = ?"
+        # # print(notice_url)  ## 2021-01-27 16:17:5001082745538      날짜 pk 랑 휴대전화 나눠야함
+        #
+        # cur.execute(sql, [rows[0][3]])
+        # rows = cur.fetchall()
+        #
+        # photo=rows[0][0]
+        # print(photo)
+        notice = get_object_or_404(Notice,pk=rows[0][3])
 
 
 
@@ -586,7 +602,7 @@ def m_noticeDetail(request,notice_url):
         conn.close()
 
         return render(request, 'sms/m_noticeDetail.html',
-                      {'message': message, 'message_User': message_User, "title":title,"sender_id":sender_id ,"date":notice_url[:19]})
+                      {'message': message, 'message_User': message_User, "title":title,"sender_id":sender_id ,"date":notice_url[:19],'notice':notice})
     else:
         return render(request, 'sms/m_noticeDetail.html')
 #
