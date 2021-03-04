@@ -145,11 +145,16 @@
 											<p>{{text}}<p>
 										</div>
 										<div class="row mb-4 text-center">
+<!--											<div class="col">-->
+<!--												<img width="450" height="450" class="bg-login-image"/>-->
+<!--											</div>-->
+<!--											<div class="col">-->
+<!--												<img width="450" height="450" class="bg-register-image"/>-->
+<!--											</div>-->
 											<div class="col">
-												<img width="450" height="450" class="bg-login-image"/>
-											</div>
-											<div class="col">
-												<img width="450" height="450" class="bg-register-image"/>
+															{% for photo in notice.photo_set.all %}
+															<img src="{{ photo.image.url }}" width="450" height="450" >
+															{% endfor %}
 											</div>
 										</div>
 										<div class="text-right">

@@ -309,6 +309,7 @@ def noticeDetail(request,notice_pk):
         cur = conn.cursor()
         print(notice_pk)
         sql = "select * from sms_Notice where notice_pk = ?"
+        notice = get_object_or_404(Notice, pk=notice_pk)
         cur.execute(sql,[str(notice_pk)])
         rows = cur.fetchall()
 
@@ -375,12 +376,7 @@ def noticeDetail(request,notice_pk):
 
 
 
-
-
-
-
-
-        return render(request, 'sms/noticeDetail.html',{"title":title,"text":text,"rate":int(rate[0]),"day":str(day[0]) ,
+        return render(request, 'sms/noticeDetail.html',{"title":title,"text":text,"rate":int(rate[0]),"day":str(day[0]) ,"notice":notice,
                                                         "total":sorted(total.items()),"total_len":len(total),
                                                         "verify":sorted(verify.items()),
                                                         "verify_len":len(verify),
